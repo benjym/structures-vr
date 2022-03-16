@@ -6,10 +6,9 @@ module.exports = [
         // mode: "production",
         entry: './js/index.js',
         output: {
-            path: path.resolve(__dirname, 'js'),
+            // path: path.resolve(__dirname, 'js'),
             filename: 'bundle.js',
         },
-        watch: true,
         devServer: {
             static: {
               directory: '.'
