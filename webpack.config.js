@@ -10,5 +10,10 @@ module.exports = [
             filename: 'bundle.js',
         },
         watch: true,
+        devServer: {
+            static: {
+              directory: '.'
+            },
+        },
     },
 ];
