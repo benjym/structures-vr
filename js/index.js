@@ -5,13 +5,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { Lut } from 'three/examples/jsm/math/Lut.js';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
-import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 
-let beam, initial_positions;
+import * as PHYSICS from './physics.js';
+import * as CONTROLLERS from './controllers.js';
+
+let beam;
 let left_support, right_support;
 let load_position_gui;
-let EI;
-let controller1, controller2;
 
 let urlParams = new URLSearchParams(window.location.search);
 
@@ -43,7 +43,7 @@ document.body.appendChild( renderer.domElement );
 if ( urlParams.has('VR') ) {
     document.body.appendChild( VRButton.createButton( renderer ) );
     renderer.xr.enabled = true;
-    add_controllers();
+    CONTROLLERS.add_controllers(renderer, scene);
 }
 
 const gridHelper = new THREE.GridHelper( 100, 100 );
@@ -93,7 +93,7 @@ function make_new_beam() {
 
     beam = new THREE.Mesh( geometry, beam_material );
     scene.add( beam );
-    initial_positions = beam.geometry.attributes.position.array.map((x)=> x);
+    PHYSICS.set_initial_position(beam.geometry.attributes.position.array);
 
     camera.position.y = params.length/8;
     camera.position.z = params.length/1.5;
@@ -124,70 +124,14 @@ function make_new_beam() {
     redraw_beam();
 }
 
-function onSelectStart() {
-
-}
-
-function onSelectEnd() {
-
-}
-
-function add_controllers() {
-    controller1 = renderer.xr.getController( 0 );
-	controller1.addEventListener( 'selectstart', onSelectStart );
-	controller1.addEventListener( 'selectend', onSelectEnd );
-	scene.add( controller1 );
-
-	controller2 = renderer.xr.getController( 1 );
-	controller2.addEventListener( 'selectstart', onSelectStart );
-	controller2.addEventListener( 'selectend', onSelectEnd );
-	scene.add( controller2 );
-
-	const controllerModelFactory = new XRControllerModelFactory();
-
-	let controllerGrip1 = renderer.xr.getControllerGrip( 0 );
-	controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
-	scene.add( controllerGrip1 );
-
-	let controllerGrip2 = renderer.xr.getControllerGrip( 1 );
-	controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
-	scene.add( controllerGrip2 );
-}
-
 function redraw_beam() {
-    EI = params.youngs_modulus * 1e9 * params.depth * Math.pow(params.height, 3) / 12; // convert from GPa to Pa
-
-    // stolen from https://www.linsgroup.com/MECHANICAL_DESIGN/Beam/beam_formula.htm
-    const positions = beam.geometry.attributes.position.array;
-    let deflection;
-    let bending_moment = [];
-    let shear_force = [];
-    let a = params.load_position; // distance from left to load point
-    let b = params.length - a; // distance from right to load point
-    let P = params.applied_load * 1e3; // applied load in N
-    // console.log(a,b,params.length);
-    for ( let i = 0, l = positions.length/3; i < l; i ++ ) {
-    let x = positions[i*3 + 0] + params.length/2; // distance along beam
-    // console.log(x)
-    if ( x < a ) {
-        deflection = P * b * x * (params.length*params.length - b*b - x*x )/(6*EI*params.length);
-        bending_moment.push(P * b * x / params.length);
-        shear_force.push(P * b / l);
-    } else {
-        deflection = P * a * (params.length - x) * (2*params.length*x - x*x - a*a )/(6*EI*params.length);
-        bending_moment.push(P * a / params.length * ( params.length - x));
-        shear_force.push(-P * a / l);
-    }
-
-      positions[ i*3+1 ] = initial_positions[i*3+1] - deflection;
-
-    }
-    beam.geometry.setAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+    PHYSICS.updateDeformation(params);
+    beam.geometry.setAttribute( 'position', new THREE.BufferAttribute( PHYSICS.positions, 3 ) );
     beam.geometry.attributes.position.needsUpdate = true;
 
     if ( params.colour_by === 'None' ) {
         let colors = [];
-        for ( let i = 0; i < shear_force.length; i ++ ) {
+        for ( let i = 0; i < PHYSICS.shear_force.length; i ++ ) {
         	colors.push(1,1,1);
         }
         // console.log(colors)
@@ -196,8 +140,8 @@ function redraw_beam() {
         beam.material.needsUpdate = true;
     } else {
         let arr;
-        if ( params.colour_by === 'Bending Moment' ) { arr = bending_moment; lut = rainbow; }
-        else if ( params.colour_by === 'Shear Force') { arr = shear_force; lut = cooltowarm; }
+        if ( params.colour_by === 'Bending Moment' ) { arr = PHYSICS.bending_moment; lut = rainbow; }
+        else if ( params.colour_by === 'Shear Force') { arr = PHYSICS.shear_force; lut = cooltowarm; }
         let min_val = Math.min(...arr);
         let max_val = Math.max(...arr);
         if ( max_val > min_val ) {
