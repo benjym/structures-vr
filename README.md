@@ -8,4 +8,4 @@ Structural analysis in virtual reality for education
 
 ## Usage
 
-You can test out the code [here]( https://benjym.github.io/structures-vr/dist/) and in VR [here](https://benjym.github.io/structures-vr/dist/?VR).
+You can test out the code [here]( https://benjym.github.io/structures-vr/) and in VR [here](https://benjym.github.io/structures-vr/?VR).
