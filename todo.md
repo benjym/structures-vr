@@ -11,3 +11,10 @@
  - Finish survey
  - Decide what to do about colorbars? How will users know what the colours mean? --- DONE
  - Decide what background/where the scene should be
+
+# Timeline
+ - 12/05/22 --- When this document was last edited
+ - 01/06/22 --- Benjy goes to France
+ - 01/07/22 --- Finish integration with Structureskit.jl
+ - 01/08/22 --- Semester 2 starts
+ - 01/09/22 --- Test on some students
