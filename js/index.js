@@ -9,6 +9,7 @@ import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import * as PHYSICS from './physics.js';
 import * as CONTROLLERS from './controllers.js';
 
+let group = new THREE.Group();
 let beam;
 let left_support, right_support;
 let load_position_gui;
@@ -24,9 +25,11 @@ let params = {
     applied_load : 0,
     load_position: 5,
     youngs_modulus : 215,
-    colour_by : 'None',
+    colour_by : 'Bending Moment',
     np : 100, // number of points along beam
 }
+
+let beam_z_offset = -0.5;
 
 let lut;
 let rainbow = new Lut("rainbow", 512); // options are rainbow, cooltowarm and blackbody
@@ -35,7 +38,11 @@ let cooltowarm = new Lut("cooltowarm", 512); // options are rainbow, cooltowarm 
 // lut.setMax(100);
 
 const scene = new THREE.Scene();
+scene.background = new THREE.Color( 0x333333 );
+
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+scene.add( group );
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -92,7 +99,9 @@ function make_new_beam() {
     // material.wireframe = true;
 
     beam = new THREE.Mesh( geometry, beam_material );
-    scene.add( beam );
+    beam.position.z = beam_z_offset; // move the beam away from the start location
+    group.add ( beam );
+    // scene.add( beam );
     PHYSICS.set_initial_position(beam.geometry.attributes.position.array);
 
     camera.position.y = params.length/8;
@@ -105,7 +114,7 @@ function make_new_beam() {
         }
         let geometry = new THREE.CylinderGeometry(pin_radius,pin_radius,params.depth,20,32);
         left_support = new THREE.Mesh( geometry, material );
-        left_support.position.set(-params.length/2.,-params.height/2-pin_radius,0);
+        left_support.position.set(-params.length/2.,-params.height/2-pin_radius,beam_z_offset);
         left_support.rotation.x = Math.PI/2.;
         scene.add( left_support );
     }
@@ -115,7 +124,7 @@ function make_new_beam() {
         }
         let geometry = new THREE.CylinderGeometry(pin_radius,pin_radius,params.depth,20,32);
         right_support = new THREE.Mesh( geometry, material );
-        right_support.position.set(params.length/2.,-params.height/2-pin_radius,0);
+        right_support.position.set(params.length/2.,-params.height/2-pin_radius,beam_z_offset);
         right_support.rotation.x = Math.PI/2.;
         scene.add( right_support );
     }
@@ -168,6 +177,10 @@ function redraw_beam() {
 function animate() {
     if ( urlParams.has('VR') ) {
         renderer.setAnimationLoop( function () {
+            params = CONTROLLERS.handleCollisions( params, group );
+            // if ( params.applied_load !== 0 ) { console.log('redrawing...'); redraw_beam() }
+            redraw_beam();
+            console.log(params.load_position, params.applied_load);
             renderer.render( scene, camera );
         } );
     } else {
