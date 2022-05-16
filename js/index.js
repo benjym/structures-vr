@@ -110,7 +110,15 @@ function make_new_beam() {
     camera.position.y = params.length/8;
     camera.position.z = params.length/1.5;
 
-    let pin_radius = Math.min(params.height,params.depth)/2.;
+    let pin_radius;
+
+    if  ( urlParams.has('VR') ) {
+        pin_radius = 0.5;
+    }
+    else {
+        pin_radius = Math.min(params.height,params.depth)/2.;
+    }
+
     if ( params.left === 'pin' ) {
         if ( left_support !== undefined ) {
             scene.remove(left_support)
