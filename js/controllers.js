@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
+import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
 
 let controller1, controller2;
 let controllerGrip1, controllerGrip2;
@@ -14,31 +15,48 @@ function onSelectEnd() {
 
 }
 
-export function add_controllers(renderer, scene) {
+export function add_controllers(renderer, scene, use_hands) {
 
-    controller1 = renderer.xr.getController( 0 );
-	controller1.addEventListener( 'selectstart', onSelectStart );
-	controller1.addEventListener( 'selectend', onSelectEnd );
-	scene.add( controller1 );
-
-	controller2 = renderer.xr.getController( 1 );
-	controller2.addEventListener( 'selectstart', onSelectStart );
-	controller2.addEventListener( 'selectend', onSelectEnd );
-	scene.add( controller2 );
-
-	const controllerModelFactory = new XRControllerModelFactory();
-
-	controllerGrip1 = renderer.xr.getControllerGrip( 0 );
+    controllerGrip1 = renderer.xr.getControllerGrip( 0 );
     controllerGrip1.addEventListener( 'connected', controllerConnected );
-	controllerGrip1.addEventListener( 'disconnected', controllerDisconnected );
-	controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
-	scene.add( controllerGrip1 );
+    controllerGrip1.addEventListener( 'disconnected', controllerDisconnected );
+    scene.add( controllerGrip1 );
 
-	controllerGrip2 = renderer.xr.getControllerGrip( 1 );
+    controllerGrip2 = renderer.xr.getControllerGrip( 1 );
     controllerGrip2.addEventListener( 'connected', controllerConnected );
-	controllerGrip2.addEventListener( 'disconnected', controllerDisconnected );
-	controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
-	scene.add( controllerGrip2 );
+    controllerGrip2.addEventListener( 'disconnected', controllerDisconnected );
+    scene.add( controllerGrip2 );
+
+    if ( use_hands ) {
+        const handModelFactory = new XRHandModelFactory();
+
+        controller1 = renderer.xr.getHand( 0 );
+        controller1.add ( handModelFactory.createHandModel( controller1, 'mesh' ) );
+        scene.add( controller1 );
+
+        controller2 = renderer.xr.getHand( 1 );
+        controller2.add ( handModelFactory.createHandModel( controller2, 'mesh' ) );
+        scene.add( controller2 );
+    }
+    else {
+        const controllerModelFactory = new XRControllerModelFactory();
+
+        controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
+        controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
+
+        controller1 = renderer.xr.getController( 0 );
+        controller1.addEventListener( 'selectstart', onSelectStart );
+        controller1.addEventListener( 'selectend', onSelectEnd );
+        scene.add( controller1 );
+
+        controller2 = renderer.xr.getController( 1 );
+        controller2.addEventListener( 'selectstart', onSelectStart );
+        controller2.addEventListener( 'selectend', onSelectEnd );
+        scene.add( controller2 );
+    }
+
+
+
 
 }
 

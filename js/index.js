@@ -52,7 +52,10 @@ document.body.appendChild( renderer.domElement );
 if ( urlParams.has('VR') ) {
     document.body.appendChild( VRButton.createButton( renderer ) );
     renderer.xr.enabled = true;
-    CONTROLLERS.add_controllers(renderer, scene);
+    let use_hands;
+    if ( urlParams.has('use_hands') ) { use_hands = true; }
+    else { use_hands = false; }
+    CONTROLLERS.add_controllers(renderer, scene, use_hands);
     params.displacement_control = true;
 }
 
