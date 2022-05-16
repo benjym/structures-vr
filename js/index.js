@@ -194,7 +194,7 @@ function animate() {
             params = CONTROLLERS.handleCollisions( params, group );
             // if ( params.applied_load !== 0 ) { console.log('redrawing...'); redraw_beam() }
             redraw_beam();
-            console.log(params.load_position, params.applied_load);
+            // console.log(params.load_position, params.applied_load);
             renderer.render( scene, camera );
         } );
     } else {

@@ -5,17 +5,9 @@ import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.
 let controller1, controller2;
 let controllerGrip1, controllerGrip2;
 let controllers = [];
+let squeeze = [0,0];
+
 const box = new THREE.Box3();
-
-function onSelectStart(evt) {
-    const index = controllers.findIndex( o => o.controller === evt.target );
-    controllers[index].squeezing = true;
-}
-
-function onSelectEnd(evt) {
-    const index = controllers.findIndex( o => o.controller === evt.target );
-    controllers[index].squeezing = false;
-}
 
 export function add_controllers(renderer, scene, use_hands) {
 
@@ -52,11 +44,15 @@ export function add_controllers(renderer, scene, use_hands) {
 		hand2.add( handModelFactory.createHandModel( hand2, 'mesh' ) );
 		scene.add( hand2 );
 
-        controllerGrip1.addEventListener( 'squeezestart', onSelectStart );
-        controllerGrip1.addEventListener( 'squeezeend', onSelectEnd );
+        controllerGrip1.addEventListener( 'connected', controllerConnected );
+        controllerGrip1.addEventListener( 'disconnected', controllerDisconnected );
+        controllerGrip1.addEventListener( 'squeezestart', () => { squeeze[0] = 1} );
+        controllerGrip1.addEventListener( 'squeezeend', () => { squeeze[0] = 0} );
 
-        controllerGrip2.addEventListener( 'squeezestart', onSelectStart );
-        controllerGrip2.addEventListener( 'squeezeend', onSelectEnd );
+        controllerGrip1.addEventListener( 'connected', controllerConnected );
+        controllerGrip1.addEventListener( 'disconnected', controllerDisconnected );
+        controllerGrip2.addEventListener( 'squeezestart', () => { squeeze[1] = 1} );
+        controllerGrip2.addEventListener( 'squeezeend', () => { squeeze[1] = 0} );
 
     }
     else {
@@ -71,16 +67,16 @@ export function add_controllers(renderer, scene, use_hands) {
         controllerGrip1 = renderer.xr.getControllerGrip( 0 );
         controllerGrip1.addEventListener( 'connected', controllerConnected );
         controllerGrip1.addEventListener( 'disconnected', controllerDisconnected );
-        controllerGrip1.addEventListener( 'selectstart', onSelectStart );
-        controllerGrip1.addEventListener( 'selectend', onSelectEnd );
+        controllerGrip1.addEventListener( 'squeezestart', () => { squeeze[0] = 1} );
+        controllerGrip1.addEventListener( 'squeezeend', () => { squeeze[0] = 0} );
         controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
         scene.add( controllerGrip1 );
 
         controllerGrip2 = renderer.xr.getControllerGrip( 1 );
         controllerGrip2.addEventListener( 'connected', controllerConnected );
         controllerGrip2.addEventListener( 'disconnected', controllerDisconnected );
-        controllerGrip2.addEventListener( 'selectstart', onSelectStart );
-        controllerGrip2.addEventListener( 'selectend', onSelectEnd );
+        controllerGrip2.addEventListener( 'squeezestart', () => { squeeze[1] = 1} );
+        controllerGrip2.addEventListener( 'squeezeend', () => { squeeze[1] = 0} );
         controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
         scene.add( controllerGrip2 );
 
@@ -98,7 +94,6 @@ function controllerConnected( evt ) {
 		grip: evt.target,
 		colliding: false,
 		playing: false,
-        squeezing: false
 	} );
 
 }
@@ -140,7 +135,8 @@ export function handleCollisions(params, group) {
 			const child = group.children[ i ];
 			box.setFromObject( child );
 			if ( box.intersectsSphere( sphere ) ) {
-                if ( controller.squeezing ) {
+                console.log(i, squeeze, squeeze[i])
+                if ( squeeze[i] === 1 ) {
                     params.load_position = grip.position.x + params.length/2.;;
                     params.displacement = -grip.position.y;
                     // console.log(params.load_position, params.applied_load);
@@ -158,7 +154,7 @@ export function handleCollisions(params, group) {
                     // const musicInterval = musicScale[ child.userData.index % musicScale.length ] + 12 * Math.floor( child.userData.index / musicScale.length );
                     // oscillators[ g ].frequency.value = 110 * Math.pow( 2, musicInterval / 12 );
                     controller.colliding = true;
-                    // group.children[ i ].collided = true;
+                    group.children[ i ].collided = true;
                 }
 
 			}
