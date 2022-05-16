@@ -7,12 +7,14 @@ let controllerGrip1, controllerGrip2;
 let controllers = [];
 const box = new THREE.Box3();
 
-function onSelectStart() {
-
+function onSelectStart(evt) {
+    const index = controllers.findIndex( o => o.controller === evt.target );
+    controllers[index].squeezing = true;
 }
 
-function onSelectEnd() {
-
+function onSelectEnd(evt) {
+    const index = controllers.findIndex( o => o.controller === evt.target );
+    controllers[index].squeezing = false;
 }
 
 export function add_controllers(renderer, scene, use_hands) {
@@ -32,10 +34,14 @@ export function add_controllers(renderer, scene, use_hands) {
 
         controller1 = renderer.xr.getHand( 0 );
         controllerGrip1.add ( handModelFactory.createHandModel( controller1, 'mesh' ) );
+        controller1.addEventListener( 'squeezestart', onSelectStart );
+        controller1.addEventListener( 'squeezeend', onSelectEnd );
         scene.add( controller1 );
 
         controller2 = renderer.xr.getHand( 1 );
         controllerGrip2.add ( handModelFactory.createHandModel( controller2, 'mesh' ) );
+        controller2.addEventListener( 'squeezestart', onSelectStart );
+        controller2.addEventListener( 'squeezeend', onSelectEnd );
         scene.add( controller2 );
     }
     else {
@@ -66,7 +72,8 @@ function controllerConnected( evt ) {
 		gamepad: evt.data.gamepad,
 		grip: evt.target,
 		colliding: false,
-		playing: false
+		playing: false,
+        squeezing: false
 	} );
 
 }
@@ -108,25 +115,26 @@ export function handleCollisions(params, group) {
 			const child = group.children[ i ];
 			box.setFromObject( child );
 			if ( box.intersectsSphere( sphere ) ) {
-                // console.log(grip.position)
-                params.load_position = grip.position.x + params.length/2.;;
-                params.displacement = -grip.position.y;
-                // console.log(params.load_position, params.applied_load);
+                if ( controller.squeezing ) {
+                    params.load_position = grip.position.x + params.length/2.;;
+                    params.displacement = -grip.position.y;
+                    // console.log(params.load_position, params.applied_load);
 
-				child.material.emissive.b = 1;
-				const intensity = child.userData.index / group.children.length;
-				// child.scale.setScalar( 1 + Math.random() * 0.1 * intensity );
+                    child.material.emissive.b = 1;
+                    const intensity = child.userData.index / group.children.length;
+                    // child.scale.setScalar( 1 + Math.random() * 0.1 * intensity );
 
-				if ( supportHaptic ) {
+                    if ( supportHaptic ) {
 
-					gamepad.hapticActuators[ 0 ].pulse( intensity, 100 );
+                        gamepad.hapticActuators[ 0 ].pulse( intensity, 100 );
 
-				}
+                    }
 
-				// const musicInterval = musicScale[ child.userData.index % musicScale.length ] + 12 * Math.floor( child.userData.index / musicScale.length );
-				// oscillators[ g ].frequency.value = 110 * Math.pow( 2, musicInterval / 12 );
-				controller.colliding = true;
-				group.children[ i ].collided = true;
+                    // const musicInterval = musicScale[ child.userData.index % musicScale.length ] + 12 * Math.floor( child.userData.index / musicScale.length );
+                    // oscillators[ g ].frequency.value = 110 * Math.pow( 2, musicInterval / 12 );
+                    controller.colliding = true;
+                    // group.children[ i ].collided = true;    
+                }
 
 			}
 
