@@ -19,46 +19,71 @@ function onSelectEnd(evt) {
 
 export function add_controllers(renderer, scene, use_hands) {
 
-    controllerGrip1 = renderer.xr.getControllerGrip( 0 );
-    controllerGrip1.addEventListener( 'connected', controllerConnected );
-    controllerGrip1.addEventListener( 'disconnected', controllerDisconnected );
-    scene.add( controllerGrip1 );
 
-    controllerGrip2 = renderer.xr.getControllerGrip( 1 );
-    controllerGrip2.addEventListener( 'connected', controllerConnected );
-    controllerGrip2.addEventListener( 'disconnected', controllerDisconnected );
-    scene.add( controllerGrip2 );
 
     if ( use_hands ) {
+
+        // controllers
+		const controller1 = renderer.xr.getController( 0 );
+		scene.add( controller1 );
+
+		const controller2 = renderer.xr.getController( 1 );
+		scene.add( controller2 );
+
+		const controllerModelFactory = new XRControllerModelFactory();
+
+		// Hand 1
+		const controllerGrip1 = renderer.xr.getControllerGrip( 0 );
+		controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
+		scene.add( controllerGrip1 );
+
         const handModelFactory = new XRHandModelFactory();
 
-        controller1 = renderer.xr.getHand( 0 );
-        controllerGrip1.add ( handModelFactory.createHandModel( controller1, 'mesh' ) );
-        controller1.addEventListener( 'squeezestart', onSelectStart );
-        controller1.addEventListener( 'squeezeend', onSelectEnd );
-        scene.add( controller1 );
+		const hand1 = renderer.xr.getHand( 0 );
+		hand1.add( handModelFactory.createHandModel( hand1, 'mesh' ) );
+		scene.add( hand1 );
 
-        controller2 = renderer.xr.getHand( 1 );
-        controllerGrip2.add ( handModelFactory.createHandModel( controller2, 'mesh' ) );
-        controller2.addEventListener( 'squeezestart', onSelectStart );
-        controller2.addEventListener( 'squeezeend', onSelectEnd );
-        scene.add( controller2 );
+		// Hand 2
+		const controllerGrip2 = renderer.xr.getControllerGrip( 1 );
+		controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
+		scene.add( controllerGrip2 );
+
+		const hand2 = renderer.xr.getHand( 1 );
+		hand2.add( handModelFactory.createHandModel( hand2, 'mesh' ) );
+		scene.add( hand2 );
+
+        controllerGrip1.addEventListener( 'squeezestart', onSelectStart );
+        controllerGrip1.addEventListener( 'squeezeend', onSelectEnd );
+
+        controllerGrip2.addEventListener( 'squeezestart', onSelectStart );
+        controllerGrip2.addEventListener( 'squeezeend', onSelectEnd );
+
     }
     else {
-        const controllerModelFactory = new XRControllerModelFactory();
-
-        controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
-        controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
-
         controller1 = renderer.xr.getController( 0 );
-        controller1.addEventListener( 'selectstart', onSelectStart );
-        controller1.addEventListener( 'selectend', onSelectEnd );
         scene.add( controller1 );
 
         controller2 = renderer.xr.getController( 1 );
-        controller2.addEventListener( 'selectstart', onSelectStart );
-        controller2.addEventListener( 'selectend', onSelectEnd );
         scene.add( controller2 );
+
+        const controllerModelFactory = new XRControllerModelFactory();
+
+        controllerGrip1 = renderer.xr.getControllerGrip( 0 );
+        controllerGrip1.addEventListener( 'connected', controllerConnected );
+        controllerGrip1.addEventListener( 'disconnected', controllerDisconnected );
+        controllerGrip1.addEventListener( 'selectstart', onSelectStart );
+        controllerGrip1.addEventListener( 'selectend', onSelectEnd );
+        controllerGrip1.add( controllerModelFactory.createControllerModel( controllerGrip1 ) );
+        scene.add( controllerGrip1 );
+
+        controllerGrip2 = renderer.xr.getControllerGrip( 1 );
+        controllerGrip2.addEventListener( 'connected', controllerConnected );
+        controllerGrip2.addEventListener( 'disconnected', controllerDisconnected );
+        controllerGrip2.addEventListener( 'selectstart', onSelectStart );
+        controllerGrip2.addEventListener( 'selectend', onSelectEnd );
+        controllerGrip2.add( controllerModelFactory.createControllerModel( controllerGrip2 ) );
+        scene.add( controllerGrip2 );
+
     }
 
 
@@ -133,7 +158,7 @@ export function handleCollisions(params, group) {
                     // const musicInterval = musicScale[ child.userData.index % musicScale.length ] + 12 * Math.floor( child.userData.index / musicScale.length );
                     // oscillators[ g ].frequency.value = 110 * Math.pow( 2, musicInterval / 12 );
                     controller.colliding = true;
-                    // group.children[ i ].collided = true;    
+                    // group.children[ i ].collided = true;
                 }
 
 			}
