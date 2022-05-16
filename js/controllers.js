@@ -92,7 +92,7 @@ export function handleCollisions(params, group) {
 			if ( box.intersectsSphere( sphere ) ) {
                 // console.log(grip.position)
                 params.load_position = grip.position.x + params.length/2.;;
-                params.applied_load = -grip.position.y*2e3;
+                params.displacement = -grip.position.y;
                 // console.log(params.load_position, params.applied_load);
 
 				child.material.emissive.b = 1;

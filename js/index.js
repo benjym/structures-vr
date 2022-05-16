@@ -17,9 +17,9 @@ let load_position_gui;
 let urlParams = new URLSearchParams(window.location.search);
 
 let params = {
-    length : 10, // beam length (m)
+    length : 5, // beam length (m)
     depth : 0.2,
-    height : 0.2,
+    height : 1,
     left : 'pin',
     right : 'pin',
     applied_load : 0,
@@ -27,6 +27,8 @@ let params = {
     youngs_modulus : 215,
     colour_by : 'Bending Moment',
     np : 100, // number of points along beam
+    displacement_control : false,
+    displacement: 0
 }
 
 let beam_z_offset = -0.5;
@@ -51,6 +53,7 @@ if ( urlParams.has('VR') ) {
     document.body.appendChild( VRButton.createButton( renderer ) );
     renderer.xr.enabled = true;
     CONTROLLERS.add_controllers(renderer, scene);
+    params.displacement_control = true;
 }
 
 const gridHelper = new THREE.GridHelper( 100, 100 );
@@ -86,7 +89,7 @@ make_new_beam();
 
 function make_new_beam() {
     if ( beam !== undefined ) {
-        scene.remove(beam)
+        group.remove(beam)
     }
     load_position_gui.max(params.length);
     if ( params.load_position > params.length ) {

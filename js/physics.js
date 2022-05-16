@@ -1,5 +1,6 @@
 export let positions, shear_force, bending_moment;
 let initial_positions;
+let EI;
 
 export function set_initial_position(p) {
     positions = p.map((x)=> x); // deep copy
@@ -7,16 +8,25 @@ export function set_initial_position(p) {
 }
 
 export function updateDeformation(params) {
-    let EI = params.youngs_modulus * 1e9 * params.depth * Math.pow(params.height, 3) / 12; // convert from GPa to Pa
+    let a = params.load_position; // distance from left to load point
+    let b = params.length - a; // distance from right to load point
+    let P = params.applied_load * 1e3; // applied load in N
+
+    if ( params.displacement_control ) {
+        EI = P * a*a * b*b / (3 * params.displacement * params.length) || 1;
+        params.applied_load = 1;
+        // console.log(EI)
+    }
+    else {
+        EI = params.youngs_modulus * 1e9 * params.depth * Math.pow(params.height, 3) / 12; // convert from GPa to Pa
+    }
 
     // stolen from https://www.linsgroup.com/MECHANICAL_DESIGN/Beam/beam_formula.htm
 
     let deflection;
     bending_moment = [];
     shear_force = [];
-    let a = params.load_position; // distance from left to load point
-    let b = params.length - a; // distance from right to load point
-    let P = params.applied_load * 1e3; // applied load in N
+
     // console.log(a,b,params.length);
     for ( let i = 0, l = positions.length/3; i < l; i ++ ) {
     let x = positions[i*3 + 0] + params.length/2; // distance along beam
