@@ -31,11 +31,11 @@ export function add_controllers(renderer, scene, use_hands) {
         const handModelFactory = new XRHandModelFactory();
 
         controller1 = renderer.xr.getHand( 0 );
-        controller1.add ( handModelFactory.createHandModel( controller1, 'mesh' ) );
+        controllerGrip1.add ( handModelFactory.createHandModel( controller1, 'mesh' ) );
         scene.add( controller1 );
 
         controller2 = renderer.xr.getHand( 1 );
-        controller2.add ( handModelFactory.createHandModel( controller2, 'mesh' ) );
+        controllerGrip2.add ( handModelFactory.createHandModel( controller2, 'mesh' ) );
         scene.add( controller2 );
     }
     else {
