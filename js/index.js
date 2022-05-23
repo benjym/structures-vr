@@ -28,10 +28,10 @@ let params = {
     colour_by : 'Bending Moment',
     np : 100, // number of points along beam
     displacement_control : false,
-    displacement: 0
+    displacement: new THREE.Vector3(),
 }
 
-let beam_z_offset = -0.5;
+let beam_offset = new THREE.Vector3(0,1,-0.4);
 
 let lut;
 let rainbow = new Lut("rainbow", 512); // options are rainbow, cooltowarm and blackbody
@@ -88,9 +88,13 @@ gui.add( params, 'youngs_modulus', 10, 1000, 1 )
 gui.add( params, 'colour_by', ['None','Shear Force','Bending Moment'] )
     .name( 'Colour by' ).onChange( redraw_beam );
 
+export function make_new_beam() {
+    make_square_beam();
+}
+
 make_new_beam();
 
-function make_new_beam() {
+function make_square_beam() {
     if ( beam !== undefined ) {
         group.remove(beam)
     }
@@ -105,7 +109,8 @@ function make_new_beam() {
     // material.wireframe = true;
 
     beam = new THREE.Mesh( geometry, beam_material );
-    beam.position.z = beam_z_offset; // move the beam away from the start location
+    beam.position.add( beam_offset ); // move the beam away from the start location
+    // console.log(beam.position)
     group.add ( beam );
     // scene.add( beam );
     PHYSICS.set_initial_position(beam.geometry.attributes.position.array);
@@ -128,7 +133,8 @@ function make_new_beam() {
         }
         let geometry = new THREE.CylinderGeometry(pin_radius,pin_radius,params.depth,20,32);
         left_support = new THREE.Mesh( geometry, material );
-        left_support.position.set(-params.length/2.,-params.height/2-pin_radius,beam_z_offset);
+        left_support.position.set(-params.length/2.,-params.height/2-pin_radius,0);
+        left_support.position.add(beam_offset);
         left_support.rotation.x = Math.PI/2.;
         scene.add( left_support );
     }
@@ -138,7 +144,8 @@ function make_new_beam() {
         }
         let geometry = new THREE.CylinderGeometry(pin_radius,pin_radius,params.depth,20,32);
         right_support = new THREE.Mesh( geometry, material );
-        right_support.position.set(params.length/2.,-params.height/2-pin_radius,beam_z_offset);
+        right_support.position.set(params.length/2.,-params.height/2-pin_radius,0);
+        right_support.position.add(beam_offset);
         right_support.rotation.x = Math.PI/2.;
         scene.add( right_support );
     }
