@@ -17,6 +17,7 @@ RUN apt-get update && \
     git \
     python3 \
     python3-pip \
+    python-is-python3 \
     wget \
     nano \
     julia \
@@ -48,6 +49,7 @@ RUN git clone https://github.com/emscripten-core/emsdk.git
 WORKDIR ${WORK_DIR}/emsdk
 RUN ./emsdk install emscripten-main-64bit binaryen-main-64bit
 RUN ./emsdk activate emscripten-main-64bit binaryen-main-64bit
+RUN source ./emsdk_env.sh
 
 # Install upstream LLVM
 WORKDIR ${WORK_DIR}
@@ -57,18 +59,19 @@ WORKDIR ${WORK_DIR}/llvm-build
 RUN cmake -G Ninja -DLLVM_ENABLE_PROJECTS="clang;lld" -DCMAKE_BUILD_TYPE=Release ../llvm-project/llvm
 RUN ninja
 
-RUN echo "LLVM_ROOT = '${WORK_DIR}/llvm-build/bin'" > ${HOME}/.emscripten
+RUN echo "LLVM_ROOT = '${WORK_DIR}/llvm-build/bin'" >> ${WORK_DIR}/emsdk/.emscripten
+# RUN echo "NODE_JS = '/usr/bin/node'" >> ${WORK_DIR}/emsdk/.emscripten
 ENV PATH=${WORK_DIR}/llvm-build/bin:${PATH}
 
 WORKDIR ${WORK_DIR}
-CMD git clone https://github.com/Keno/julia-wasm.git
+RUN git clone https://github.com/Keno/julia-wasm.git
 
 WORKDIR ${WORK_DIR}/julia-wasm
 # Do this once
-CMD sh configure-julia-wasm.sh
+RUN ./configure_julia_wasm.sh
 # this command may fail at the very end of the build process, that's normal
-CMD sh build-julia-wasm.sh
+RUN ./build_julia_wasm.sh
 # Do this after you change something on the wasm side
-CMD sh rebuild_js.sh
+RUN ./rebuild_js.sh
 
-RUN emrun --no_browser --port 8888 website/repl.htm &
+# RUN emrun --no_browser --port 8888 website/repl.htm &
