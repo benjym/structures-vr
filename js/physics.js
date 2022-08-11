@@ -8,12 +8,13 @@ export function set_initial_position(p) {
 }
 
 export function updateDeformation(params) {
+    let l = params.length;
     let a = params.load_position; // distance from left to load point
-    let b = params.length - a; // distance from right to load point
+    let b = l - a; // distance from right to load point
 
     if ( params.displacement_control ) {
         EI = 1;
-        P = (3 * params.displacement.y * params.length)/( a*a * b*b ) || 0;
+        P = (3 * params.displacement.y * l)/( a*a * b*b ) || 0;
         // console.log(P)
     }
     else {
@@ -26,20 +27,88 @@ export function updateDeformation(params) {
     let deflection;
     bending_moment = [];
     shear_force = [];
-
-    // console.log(a,b,params.length);
-    for ( let i = 0, l = positions.length/3; i < l; i ++ ) {
-    let x = positions[i*3 + 0] + params.length/2; // distance along beam
-    // console.log(x)
-    if ( x < a ) {
-        deflection = P * b * x * (params.length*params.length - b*b - x*x )/(6*EI*params.length);
-        bending_moment.push(P * b * x / params.length);
-        shear_force.push(P * b / l);
-    } else {
-        deflection = P * a * (params.length - x) * (2*params.length*x - x*x - a*a )/(6*EI*params.length);
-        bending_moment.push(P * a / params.length * ( params.length - x));
-        shear_force.push(-P * a / l);
-    }
+    
+    
+    for ( let i = 0; i < positions.length/3; i ++ ) {
+        let x = positions[i*3 + 0] + l/2; // distance along beam
+    
+        if ( (params.left === 'Pin') && (params.right === 'Pin') ) {
+            // SIMPLY SUPPORTED BEAM --- IMPLEMENTED AND WORKING
+            if ( x < a ) {
+                deflection = P * b * x * (l*l - b*b - x*x )/(6*EI*l);
+                bending_moment.push(P * b * x / l);
+                shear_force.push(P * b / l);
+            } else {
+                deflection = P * a * (l - x) * (2*l*x - x*x - a*a )/(6*EI*l);
+                bending_moment.push(P * a / l * ( l - x));
+                shear_force.push(-P * a / l);
+            }
+        } else if ( (params.left === 'Fixed') && (params.right === 'Fixed') ) {
+            // IMPLEMENTED AND PROBABLY WORKING
+            let R1 = P*b*b*(3*a+b)/l/l/l;
+            let R2 = P*a*a*(3*b+a)/l/l/l;
+            if ( x < a ) {
+                deflection = P * b*b * x*x * (3*a*l - 3*a*x - b*x )/(6*EI*l*l*l);
+                bending_moment.push(R1*x - P*a*b*b/l/l);
+                shear_force.push(R1);
+            } else {
+                deflection = P * a*a * (l-x)*(l-x) * (3*b*l - 3*b*(l-x) - a*x )/(6*EI*l*l*l);
+                bending_moment.push(R2*(l-x) - P*a*a*b/l/l);
+                shear_force.push(-R2);
+            }
+        } else if ( (params.left === 'Pin') && (params.right === 'Fixed') ) {
+            // IMPLEMENTED AND PROBABLY WORKING
+            let R1 = P*b*b*(a+2*l)/(2*l*l*l);
+            let R2 = P*a*(3*l*l - a*a)/(2*l*l*l);
+            if ( x < a ) {
+                deflection = P*b*b*x*(3*a*l*l - 2*l*x*x - a*x*x)/(12*EI*l*l*l);
+                bending_moment.push(R1*x);
+                shear_force.push(R1);
+            } else {
+                deflection = P*a*((l-x)**2*(3*l*l*x - a*a*x - 2*a*a*l))/(12*EI*l*l*l);
+                bending_moment.push(R1*x - P*(x-a));
+                shear_force.push(-R2);
+            }
+        } else if ( (params.left === 'Fixed') && (params.right === 'Pin') ) {
+            // IMPLEMENTED AND PROBABLY WORKING
+            let R1 = P*a*a*(b+2*l)/(2*l*l*l);
+            let R2 = P*b*(3*l*l - b*b)/(2*l*l*l);
+            if ( x > a ) {
+                deflection = P*a*a*(l-x)*(3*b*l*l - 2*l*(l-x)*(l-x) - b*(l-x)*(l-x))/(12*EI*l*l*l);
+                bending_moment.push(R2*(l-x));
+                shear_force.push(-R2);
+            } else {
+                deflection = P*b*(x**2*(3*l*l*(l-x) - b*b*(l-x) - 2*b*b*l))/(12*EI*l*l*l);
+                bending_moment.push(R2*(l-x) - P*((l-x)-b));
+                shear_force.push(R2);
+            }
+        } else if ( (params.left === 'Fixed') && (params.right === 'Free') ) {
+            // IMPLEMENTED AND PROBABLY WORKING
+            if ( x > a ) {
+                deflection = P * a*a * (3*l - 3*(l-x) - a )/(6*EI);
+                bending_moment.push(0);
+                shear_force.push(0);
+            } else {
+                deflection = P * x**2 * (3*a -x )/(6*EI);
+                bending_moment.push(P * (l-x- a));
+                shear_force.push(-P);
+            }
+        } else if ( (params.left === 'Free') && (params.right === 'Fixed') ) {
+            // IMPLEMENTED AND PROBABLY WORKING
+            if ( x < a ) {
+                deflection = P * b*b * (3*l - 3*x - b )/(6*EI);
+                bending_moment.push(0);
+                shear_force.push(0);
+            } else {
+                deflection = P * (l - x)**2 * (3*b - l +x )/(6*EI);
+                bending_moment.push(P * (x- a));
+                shear_force.push(-P);
+            }
+        } else {
+            deflection = 0;
+            bending_moment.push(0);
+            shear_force.push(0);
+        }
 
       positions[ i*3+1 ] = initial_positions[i*3+1] - deflection;
 

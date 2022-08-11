@@ -19,11 +19,11 @@ let urlParams = new URLSearchParams(window.location.search);
 let params = {
     length : 5, // beam length (m)
     depth : 0.2,
-    height : 1,
-    left : 'pin',
-    right : 'pin',
+    height : 0.2,
+    left : 'Pin',
+    right : 'Pin',
     applied_load : 0,
-    load_position: 5,
+    load_position: 2.5,
     youngs_modulus : 215,
     colour_by : 'Bending Moment',
     np : 100, // number of points along beam
@@ -69,6 +69,15 @@ const light2 = new THREE.PointLight( 0xAAAAAA );
 light2.position.set( 10, 5, 10);
 scene.add(light2);
 
+let pin_radius;
+
+if  ( urlParams.has('VR') ) {
+    pin_radius = 0.5;
+}
+else {
+    pin_radius = Math.min(params.height,params.depth)/2.;
+}
+
 const controls = new OrbitControls( camera, renderer.domElement );
 
 let gui = new GUI();
@@ -85,7 +94,11 @@ load_position_gui = gui.add( params, 'load_position', 0, params.length )
     .name( 'Load position (m)' ).onChange( redraw_beam ).listen();
 gui.add( params, 'youngs_modulus', 10, 1000, 1 )
     .name( 'Youngs Modulus (GPa)' ).onChange( redraw_beam );
-gui.add( params, 'colour_by', ['None','Shear Force','Bending Moment'] )
+gui.add( params, 'left', ['Free','Pin','Fixed'] )
+    .name( 'Left Support' ).onChange( redraw_supports );
+gui.add( params, 'right', ['Free','Pin','Fixed'] )
+    .name( 'Right Support' ).onChange( redraw_supports );
+    gui.add( params, 'colour_by', ['None','Shear Force','Bending Moment'] )
     .name( 'Colour by' ).onChange( redraw_beam );
 
 export function make_new_beam() {
@@ -105,7 +118,7 @@ function make_square_beam() {
 
     let geometry = new THREE.BoxGeometry(params.length,params.height,params.depth,params.np, 1, 1);
     let beam_material = new THREE.MeshStandardMaterial( { color: 0xcccccc, vertexColors: true } );
-    let material = new THREE.MeshStandardMaterial( { color: 0xcccccc, vertexColors: false } );
+
     // material.wireframe = true;
 
     beam = new THREE.Mesh( geometry, beam_material );
@@ -118,40 +131,64 @@ function make_square_beam() {
     camera.position.y = params.length/8;
     camera.position.z = params.length/1.5;
 
-    let pin_radius;
+    gridHelper.position.y = -2*pin_radius-params.height/2.;
+    redraw_supports();
+    redraw_beam();
+}
 
-    if  ( urlParams.has('VR') ) {
-        pin_radius = 0.5;
-    }
-    else {
-        pin_radius = Math.min(params.height,params.depth)/2.;
-    }
+function redraw_supports() {
+    let pin_geometry = new THREE.CylinderGeometry(pin_radius,pin_radius,params.depth+2*pin_radius,20,32);
+    let fixed_geometry = new THREE.BoxGeometry(pin_radius,params.height+2*pin_radius,params.depth+2*pin_radius);
+    let left_geometry, right_geometry;
+    let support_material = new THREE.MeshStandardMaterial( { color: 0xcccccc, vertexColors: false } );
 
-    if ( params.left === 'pin' ) {
-        if ( left_support !== undefined ) {
-            scene.remove(left_support)
-        }
-        let geometry = new THREE.CylinderGeometry(pin_radius,pin_radius,params.depth,20,32);
-        left_support = new THREE.Mesh( geometry, material );
+    if ( left_support !== undefined ) {
+        scene.remove(left_support)
+    }
+    if ( right_support !== undefined ) {
+        scene.remove(right_support)
+    }
+    if ( params.left === 'Pin' ) {
+        left_geometry = pin_geometry;
+        left_support = new THREE.Mesh( left_geometry, support_material );
+    
         left_support.position.set(-params.length/2.,-params.height/2-pin_radius,0);
         left_support.position.add(beam_offset);
         left_support.rotation.x = Math.PI/2.;
         scene.add( left_support );
     }
-    if ( params.right === 'pin' ) {
-        if ( right_support !== undefined ) {
-            scene.remove(right_support)
-        }
-        let geometry = new THREE.CylinderGeometry(pin_radius,pin_radius,params.depth,20,32);
-        right_support = new THREE.Mesh( geometry, material );
+    else if ( params.left === 'Fixed' ) {
+        left_geometry = fixed_geometry;
+        left_support = new THREE.Mesh( left_geometry, support_material );
+        
+        left_support.position.set(-params.length/2.-pin_radius/2.,0,0);
+        left_support.position.add(beam_offset);
+        scene.add( left_support );
+    }
+    
+    
+    
+    if ( params.right === 'Pin' ) {
+        right_geometry = pin_geometry;
+        right_support = new THREE.Mesh( right_geometry, support_material );
+
         right_support.position.set(params.length/2.,-params.height/2-pin_radius,0);
         right_support.position.add(beam_offset);
         right_support.rotation.x = Math.PI/2.;
+
         scene.add( right_support );
     }
+    else if ( params.right === 'Fixed' ) {
+        right_geometry = fixed_geometry;
+        right_support = new THREE.Mesh( right_geometry, support_material );
 
-    gridHelper.position.y = -2*pin_radius-params.height/2.;
+        right_support.position.set(params.length/2.+pin_radius/2.,0,0);
+        right_support.position.add(beam_offset);
+        scene.add( right_support );
+    }
+    
     redraw_beam();
+    
 }
 
 function redraw_beam() {
