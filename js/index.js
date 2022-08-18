@@ -9,6 +9,9 @@ import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 import * as PHYSICS from './physics.js';
 import * as CONTROLLERS from './controllers.js';
 
+// import * as VRGUI from './datguivr/datguivr.min.js';
+import * as VRGUI from './guivr.js';
+
 let group = new THREE.Group();
 let beam;
 let left_support, right_support;
@@ -31,6 +34,11 @@ let params = {
     displacement: new THREE.Vector3(),
 }
 
+let VR = false;
+if ( urlParams.has('VR') || urlParams.has('vr') ) {
+    VR = true;
+}
+
 let beam_offset = new THREE.Vector3(0,1,-0.4);
 
 let lut;
@@ -49,7 +57,7 @@ scene.add( group );
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
-if ( urlParams.has('VR') ) {
+if ( VR ) {
     document.body.appendChild( VRButton.createButton( renderer ) );
     renderer.xr.enabled = true;
     let use_hands;
@@ -70,36 +78,49 @@ light2.position.set( 10, 5, 10);
 scene.add(light2);
 
 let pin_radius;
+let gui;
 
-if  ( urlParams.has('VR') ) {
+if ( VR ) {
     pin_radius = 0.5;
+    // VRGUI.create('Parameters').then((gui) => {
+    //     scene.add( gui );
+
+    //     VRGUI.add_button('test')
+    // } );
+    // add_gui();
+    // gui.position.x = 2;
+    // gui.position.z = -2;
+    // gui.rotation.y = -Math.PI/2.;
+    // gui.position.y = 2;
+    
+    const controls = new OrbitControls( camera, renderer.domElement );
 }
 else {
+    const controls = new OrbitControls( camera, renderer.domElement );
     pin_radius = Math.min(params.height,params.depth)/2.;
+
+    gui = new GUI();
+
+
+    gui.add( params, 'length', 1, 100, 0.1 )
+        .name( 'Beam length (m)' ).onChange( make_new_beam );
+    gui.add( params, 'height', 0.1, 1, 0.01 )
+        .name( 'Beam height (m)' ).onChange( make_new_beam );
+    gui.add( params, 'depth', 0.1, 1, 0.01 )
+        .name( 'Beam depth (m)' ).onChange( make_new_beam );
+    gui.add( params, 'applied_load', 0, 100 )
+        .name( 'Applied load (kN)' ).onChange( redraw_beam );
+    load_position_gui = gui.add( params, 'load_position', 0, params.length )
+        .name( 'Load position (m)' ).onChange( redraw_beam ).listen();
+    gui.add( params, 'youngs_modulus', 10, 1000, 1 )
+        .name( 'Youngs Modulus (GPa)' ).onChange( redraw_beam );
+    gui.add( params, 'left', ['Free','Pin','Fixed'] )
+        .name( 'Left Support' ).onChange( redraw_supports );
+    gui.add( params, 'right', ['Free','Pin','Fixed'] )
+        .name( 'Right Support' ).onChange( redraw_supports );
+        gui.add( params, 'colour_by', ['None','Shear Force','Bending Moment'] )
+        .name( 'Colour by' ).onChange( redraw_beam );
 }
-
-const controls = new OrbitControls( camera, renderer.domElement );
-
-let gui = new GUI();
-
-gui.add( params, 'length', 1, 100, 0.1 )
-    .name( 'Beam length (m)' ).onChange( make_new_beam );
-gui.add( params, 'height', 0.1, 1, 0.01 )
-    .name( 'Beam height (m)' ).onChange( make_new_beam );
-gui.add( params, 'depth', 0.1, 1, 0.01 )
-    .name( 'Beam depth (m)' ).onChange( make_new_beam );
-gui.add( params, 'applied_load', 0, 100 )
-    .name( 'Applied load (kN)' ).onChange( redraw_beam );
-load_position_gui = gui.add( params, 'load_position', 0, params.length )
-    .name( 'Load position (m)' ).onChange( redraw_beam ).listen();
-gui.add( params, 'youngs_modulus', 10, 1000, 1 )
-    .name( 'Youngs Modulus (GPa)' ).onChange( redraw_beam );
-gui.add( params, 'left', ['Free','Pin','Fixed'] )
-    .name( 'Left Support' ).onChange( redraw_supports );
-gui.add( params, 'right', ['Free','Pin','Fixed'] )
-    .name( 'Right Support' ).onChange( redraw_supports );
-    gui.add( params, 'colour_by', ['None','Shear Force','Bending Moment'] )
-    .name( 'Colour by' ).onChange( redraw_beam );
 
 export function make_new_beam() {
     make_square_beam();
@@ -111,7 +132,7 @@ function make_square_beam() {
     if ( beam !== undefined ) {
         group.remove(beam)
     }
-    load_position_gui.max(params.length);
+    // load_position_gui.max(params.length);
     if ( params.load_position > params.length ) {
         params.load_position = params.length;
     }
@@ -120,10 +141,10 @@ function make_square_beam() {
     let beam_material = new THREE.MeshStandardMaterial( { color: 0xcccccc, vertexColors: true } );
 
     // material.wireframe = true;
-
+    
     beam = new THREE.Mesh( geometry, beam_material );
     beam.position.add( beam_offset ); // move the beam away from the start location
-    // console.log(beam.position)
+    
     group.add ( beam );
     // scene.add( beam );
     PHYSICS.set_initial_position(beam.geometry.attributes.position.array);
@@ -206,26 +227,35 @@ function redraw_beam() {
         beam.geometry.attributes.color.needsUpdate = true;
         beam.material.needsUpdate = true;
     } else {
-        let arr;
-        if ( params.colour_by === 'Bending Moment' ) { arr = PHYSICS.bending_moment; lut = rainbow; }
-        else if ( params.colour_by === 'Shear Force') { arr = PHYSICS.shear_force; lut = cooltowarm; }
-        let min_val = Math.min(...arr);
-        let max_val = Math.max(...arr);
-        if ( max_val > min_val ) {
-            lut.setMin(min_val);
-            lut.setMax(max_val);
-            // console.log(arr)
-            const colors = [];
-            for ( let i = 0; i < arr.length; i ++ ) {
-            	const colorValue = arr[ i ];
-            	const color = lut.getColor( colorValue );
-            	colors.push(color.r, color.g, color.b);
-            }
-            // colors.needsUpdate = true;
-            // console.log(colors)
-            beam.geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
-            beam.geometry.attributes.color.needsUpdate = true;
-            beam.material.needsUpdate = true;
+        let arr, max_val;
+        if ( params.colour_by === 'Bending Moment' ) {
+            arr = PHYSICS.bending_moment;
+            lut = cooltowarm;
+            max_val = PHYSICS.M_max;
+        }
+        else if ( params.colour_by === 'Shear Force') {
+            arr = PHYSICS.shear_force;
+            lut = cooltowarm;
+            max_val = PHYSICS.SF_max;
+        }
+        // let min_val = Math.min(...arr);
+        // let max_val = Math.max(...arr);
+        console.log(max_val)
+        if ( max_val > 0 ) {
+        lut.setMin(-max_val);
+        lut.setMax( max_val);
+        console.log(max_val)
+        const colors = [];
+        for ( let i = 0; i < arr.length; i ++ ) {
+            const colorValue = arr[ i ];
+            const color = lut.getColor( colorValue );
+            colors.push(color.r, color.g, color.b);
+        }
+        // colors.needsUpdate = true;
+        // console.log(colors)
+        beam.geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+        beam.geometry.attributes.color.needsUpdate = true;
+        beam.material.needsUpdate = true;
         }
     }
 
@@ -233,7 +263,7 @@ function redraw_beam() {
 }
 
 function animate() {
-    if ( urlParams.has('VR') ) {
+    if ( VR ) {
         renderer.setAnimationLoop( function () {
             params = CONTROLLERS.handleCollisions( params, group );
             // if ( params.applied_load !== 0 ) { console.log('redrawing...'); redraw_beam() }

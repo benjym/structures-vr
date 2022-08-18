@@ -1,6 +1,10 @@
 export let positions, shear_force, bending_moment;
 let initial_positions;
 let P, EI;
+let P_max;
+export let M_max = 0;
+export let SF_max = 0;
+let max_displacement = 0.5;
 
 export function set_initial_position(p) {
     positions = p.map((x)=> x); // deep copy
@@ -14,7 +18,54 @@ export function updateDeformation(params) {
 
     if ( params.displacement_control ) {
         EI = 1;
-        P = (3 * params.displacement.y * l)/( a*a * b*b ) || 0;
+        if ( (params.left === 'Pin') && (params.right === 'Pin') ) {
+            P = (3 * params.displacement.y * l)/( a*a * b*b ) || 0;
+            P_max = (3 * max_displacement * l)/( a*a * b*b ) || 0;
+            M_max = Math.abs(P_max*a*b/l);
+            SF_max = Math.max( P_max*b/l, P_max*a/l);
+        } else if ( (params.left === 'Fixed') && (params.right === 'Fixed') ) {
+            P = (3 * EI * l*l*l * params.displacement.y )/( a*a*a * b*b*b ) || 0;
+            P_max = (3 * EI * l*l*l * max_displacement )/( a*a*a * b*b*b ) || 0;
+            let R1 = P_max*b*b*(3*a+b)/l/l/l;
+            let R2 = P_max*a*a*(3*b+a)/l/l/l;
+            let M1 = P_max*a*b*b/l/l;
+            let M2 = P_max*a*a*b/l/l;
+            M_max = Math.max(Math.abs(M1), Math.abs(M2));
+            SF_max = Math.max(Math.abs(R1), Math.abs(R2));
+        }  else if ( (params.left === 'Pin') && (params.right === 'Fixed') ) {
+            P = (12 * EI * l*l*l * params.displacement.y * (3*l + a))/( a*a * b*b*b ) || 0;
+            P_max = (12 * EI * l*l*l * max_displacement * (3*l + a))/( a*a * b*b*b ) || 0;
+            let R1 = P_max*b*b*(a+2*l)/(2*l*l*l);
+            let R2 = P_max*a*(3*l*l - a*a)/(2*l*l*l);
+            let M1 = R1*a; // moment at point of load
+            let M2 = P_max*a*b*(a+l)/(2*l*l); // moment at fixed end
+            M_max = Math.max(Math.abs(M1),Math.abs(M2));
+            SF_max = Math.max(Math.abs(R1),Math.abs(R2));
+        }  else if ( (params.left === 'Fixed') && (params.right === 'Pin') ) {
+            P = (12 * EI * l*l*l * params.displacement.y * (3*l + b))/( a*a*a * b*b ) || 0;
+            P_max = (12 * EI * l*l*l * max_displacement * (3*l + b))/( a*a*a * b*b ) || 0;
+            let R1 = P_max*a*a*(b+2*l)/(2*l*l*l);
+            let R2 = P_max*b*(3*l*l - b*b)/(2*l*l*l);
+            let M1 = R1*b; // moment at point of load
+            let M2 = P_max*b*a*(b+l)/(2*l*l); // moment at fixed end
+            M_max = Math.max(Math.abs(M1),Math.abs(M2));
+            SF_max = Math.max(Math.abs(R1),Math.abs(R2));
+        }  else if ( (params.left === 'Fixed') && (params.right === 'Free') ) {
+            P = (3 * EI * params.displacement.y)/( a*a*a ) || 0;
+            P_max = (3 * EI * max_displacement)/( a*a*a ) || 0;
+            M_max = Math.abs(P_max*a);
+            SF_max = Math.abs(P_max);
+        }  else if ( (params.left === 'Free') && (params.right === 'Fixed') ) {
+            P = (3 * EI * params.displacement.y)/( b*b*b ) || 0;
+            P_max = (3 * EI * max_displacement)/( b*b*b ) || 0;
+            M_max = Math.abs(P_max*b);
+            SF_max = Math.abs(P_max);
+        }  else {
+            P = 0;
+            P_max = 0;
+            M_max = 0;
+            SF_max = 0;
+        }
         // console.log(P)
     }
     else {
