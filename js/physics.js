@@ -79,9 +79,8 @@ export function updateDeformation(params) {
     bending_moment = [];
     shear_force = [];
     
-    
     for ( let i = 0; i < positions.length/3; i ++ ) {
-        let x = positions[i*3 + 0] + l/2; // distance along beam
+        let x = l*positions[i*3 + 0] + l/2; // distance along beam
     
         if ( (params.left === 'Pin') && (params.right === 'Pin') ) {
             // SIMPLY SUPPORTED BEAM --- IMPLEMENTED AND WORKING
@@ -160,8 +159,8 @@ export function updateDeformation(params) {
             bending_moment.push(0);
             shear_force.push(0);
         }
-
       positions[ i*3+1 ] = initial_positions[i*3+1] - deflection;
 
     }
+    // console.log(deflection)
 }

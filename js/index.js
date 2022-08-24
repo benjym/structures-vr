@@ -31,7 +31,7 @@ export let params = {
     youngs_modulus : 215,
     colour_by : 'Bending Moment',
     np : 100, // number of points along beam
-    displacement_control : false,
+    displacement_control : true,
     displacement: new THREE.Vector3(),
 }
 
@@ -141,12 +141,19 @@ else {
         .name( 'Beam height (m)' ).onChange( update_beam_size );
     gui.add( params, 'depth', 0.1, 1, 0.01 )
         .name( 'Beam depth (m)' ).onChange( update_beam_size );
+    if ( params.displacement_control ) {
+        gui.add( params.displacement, 'y', 0, 0.5 )
+        .name('Applied displacement (m)').onChange( redraw_beam);
+    } else {
     gui.add( params, 'applied_load', 0, 1000 )
         .name( 'Applied load (kN)' ).onChange( redraw_beam );
+    }
     load_position_gui = gui.add( params, 'load_position', 0, params.length )
         .name( 'Load position (m)' ).onChange( redraw_beam ).listen();
-    gui.add( params, 'youngs_modulus', 10, 1000, 1 )
-        .name( 'Youngs Modulus (GPa)' ).onChange( redraw_beam );
+    if ( !params.displacement_control ) {
+        gui.add( params, 'youngs_modulus', 10, 1000, 1 )
+    .name( 'Youngs Modulus (GPa)' ).onChange( redraw_beam );
+    }
     gui.add( params, 'left', ['Free','Pin','Fixed'] )
         .name( 'Left Support' ).onChange( redraw_supports ).listen();
     gui.add( params, 'right', ['Free','Pin','Fixed'] )
@@ -178,7 +185,7 @@ function make_square_beam() {
     let geometry = new THREE.BoxGeometry(1,1,1,params.np, 1, 1);
     let beam_material = new THREE.MeshStandardMaterial( { color: 0xcccccc, vertexColors: true } );
 
-    // material.wireframe = true;
+    // beam_material.wireframe = true;
     
     beam = new THREE.Mesh( geometry, beam_material );
     beam.scale.set( params.length,params.height,params.depth );
@@ -292,14 +299,14 @@ function redraw_beam() {
         else if ( params.colour_by === 'Shear Force') {
             arr = PHYSICS.shear_force;
             lut = cooltowarm;
-           
+            max_val = PHYSICS.SF_max;
         }
         if ( VR ) {
             
         }
         else {
             // let min_val = Math.min(...arr);
-            max_val = Math.max(...arr);
+            // max_val = Math.max(...arr);
         }
         
         // console.log(max_val)
