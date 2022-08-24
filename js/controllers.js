@@ -1,5 +1,6 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
 import * as PHYSICS from './physics.js';
+import { params, redraw_supports } from './index.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
 
@@ -17,7 +18,9 @@ export function add_controllers(renderer, scene, use_hands) {
     // if ( use_hands ) {
 
         // controllers
+        console.log(renderer.xr)
 		const controller1 = renderer.xr.getController( 0 );
+        // const primaryInputSource = xrSession.inputSources.find((src) => src.handedness === user.handedness) ?? xrSession.inputSources[0]; // HOW TO MAKE A PARTICULAR HAND CONTROLLER 1 WITH FALLBACK TO JUST THE FIRST CONNECTED
         // console.log(controller1)
 		scene.add( controller1 );
 
@@ -107,13 +110,13 @@ function onSelectEnd( evt ) {
 function onSqueezeStart( evt ) {
     evt.target.userData.squeezed = true;
     evt.target.userData.squeeze_start_position = evt.target.position.clone();
-    // console.log('squeeze on')
+    console.log('squeeze on')
 }
 
 function onSqueezeEnd( evt ) {
     evt.target.userData.squeezed = false;
     evt.target.userData.select_start_position = evt.target.position.clone();
-    // console.log('squeeze off')
+    console.log('squeeze off')
 }
 
 function controllerConnected( evt ) {
@@ -176,7 +179,9 @@ export function handleCollisions(params, group) {
 			const child = group.children[ i ];
 			box.setFromObject( child );
 			if ( box.intersectsSphere( sphere ) ) {
-                if ( grip.userData.selected ) {
+                // console.log('INTERSECTING WITH ')
+                // console.log(child)
+                if ( grip.userData.squeezed ) {
                     // params.load_position = grip.position.x + params.length/2.;
                     grip.getWorldPosition(grip_location); // set displacement to global position
                     params.displacement.subVectors(grip.userData.select_start_position,grip_location); // set displacement to the start position - current
@@ -250,4 +255,52 @@ export function handleCollisions(params, group) {
 
     return params;
 
+}
+
+export const handleBeamSelectStart = (object, controller) => {
+    console.log(controller)
+    // object.material.emissive.setScalar(0.1);
+    // controller.userData.selected = object;
+    // console.log(controller)
+    // controller.getWorldPosition(grip_location); // set displacement to global position
+    // grip_location = controller.
+    params.displacement.subVectors(grip.userData.select_start_position,grip_location); // set displacement to the start position - current
+    params.load_position = params.displacement.x + params.length/2.;
+
+    console.log('grip location: ' + grip_location.x + ' ' + grip_location.y + ' ' + grip_location.z);
+    console.log('displacement:  ' + params.displacement);
+    // params.displacement = -grip.position.y;
+    // console.log(grip.position.y);
+
+    // child.material.emissive.b = 1;
+    let max_length = 0.1; // max distance to have haptics increase at
+    const intensity = params.displacement.length()/max_length;
+    // child.scale.setScalar( 1 + Math.random() * 0.1 * intensity );
+
+    const supportHaptic = 'hapticActuators' in gamepad && gamepad.hapticActuators != null && gamepad.hapticActuators.length > 0;
+    if ( supportHaptic ) {
+        gamepad.hapticActuators[ 0 ].pulse( intensity, 100 );
+    }
+}
+
+export const handleBeamSelectEnd = (object, controller) => {
+    // console.log(object)
+    params.displacement = 0;
+}
+
+export const handleLeftSupportSelectStart = (object, controller) => {
+    if ( params.left == 'Pin' ) { params.left = 'Fixed' }
+    else if ( params.left == 'Fixed' ) { params.left = 'Free' }
+    else if ( params.left == 'Free' ) { params.left = 'Pin' }
+    redraw_supports();
+}
+export const handleRightSupportSelectStart = (object, controller) => {
+    if ( params.right == 'Pin' ) { params.right = 'Fixed' }
+    else if ( params.right == 'Fixed' ) { params.right = 'Free' }
+    else if ( params.right == 'Free' ) { params.right = 'Pin' }
+    redraw_supports();
+}
+export const handleSupportSelectEnd = (object, controller) => {
+    // console.log(object)
+    // params.displacement = 0;
 }

@@ -7,9 +7,10 @@
     "build": "webpack"
   },
   "dependencies": {
+    "@depasquale/three-immersive-controls": "^0.0.12",
     "cors": "^2.8.5",
     "express": "^4.17.3",
-    "three": "^0.138.3"
+    "three": "^0.143.0"
   },
   "devDependencies": {
     "css-loader": "^6.7.1",
