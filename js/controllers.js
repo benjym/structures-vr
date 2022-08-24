@@ -1,6 +1,6 @@
 // import * as THREE from 'three';
 import * as PHYSICS from './physics.js';
-import { params, redraw_supports, redraw_beam, controls, box, SFD, BMD } from './index.js';
+import { params, redraw_supports, redraw_beam, controls, box, SFD, BMD, renderer } from './index.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
 
@@ -259,27 +259,31 @@ export function handleCollisions(params, group) {
 
 export const handleBeamSelectStart = (object, controller) => {
     // console.log(controller)
-    controller.selected = object;
-    const intersection_point = controls.raycaster.intersectObject( object )[0].point;
-    controller.select_start_position = intersection_point;
+    if ( renderer.xr.isPresenting ) {
+        controller.selected = object;
+        const intersection_point = controls.raycaster.intersectObject( object )[0].point;
+        controller.select_start_position = intersection_point;
+    }
 }
 
 export const handleBeamIntersection = ( object ) => {
-    // console.log(controls.vrControls.controllers.right.selected)
-    let intersection_point;
-    let controller;
-    if ( controls.vrControls.controllers.left.selected === object ) {
-        intersection_point = controls.raycaster.intersectObject( object )[0].point;
-        controller = controls.vrControls.controllers.left;
-    } else if ( controls.vrControls.controllers.right.selected === object ) {
-        intersection_point = controls.raycaster.intersectObject( object )[0].point;
-        controller = controls.vrControls.controllers.right;
-    }
-    if ( intersection_point !== undefined ) {
-        params.displacement.subVectors(controller.select_start_position,intersection_point); // 
-        params.load_position = -params.displacement.x + params.length/2.;
-        params.displacement.y = Math.sign(params.displacement.y)*Math.min(Math.abs(params.displacement.y),PHYSICS.max_displacement);
-        console.log(params.displacement)
+    if ( renderer.xr.isPresenting ) {
+        // console.log(controls.vrControls.controllers.right.selected)
+        let intersection_point;
+        let controller;
+        if ( controls.vrControls.controllers.left.selected === object ) {
+            intersection_point = controls.raycaster.intersectObject( object )[0].point;
+            controller = controls.vrControls.controllers.left;
+        } else if ( controls.vrControls.controllers.right.selected === object ) {
+            intersection_point = controls.raycaster.intersectObject( object )[0].point;
+            controller = controls.vrControls.controllers.right;
+        }
+        if ( intersection_point !== undefined ) {
+            params.displacement.subVectors(controller.select_start_position,intersection_point); // 
+            params.load_position = -params.displacement.x + params.length/2.;
+            params.displacement.y = Math.sign(params.displacement.y)*Math.min(Math.abs(params.displacement.y),PHYSICS.max_displacement);
+            console.log(params.displacement)
+        }
     }
         
 
@@ -304,8 +308,10 @@ export const handleBeamIntersection = ( object ) => {
 }
 
 export const handleBeamSelectEnd = (object, controller) => {
-    controller.selected = undefined;
-    params.displacement = new THREE.Vector3();
+    if ( renderer.xr.isPresenting ) {
+        controller.selected = undefined;
+        params.displacement = new THREE.Vector3();
+    }
 }
 
 export const handleLeftSupportSelectStart = (object, controller) => {
@@ -338,4 +344,5 @@ export const handleColorSelectStart = (object, controller) => {
     redraw_beam();
 }
 export const handleColorSelectEnd = (object, controller) => {
+    // do nothing!
 }

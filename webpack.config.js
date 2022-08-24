@@ -10,8 +10,8 @@ module.exports = [
         plugins: [
           new HtmlWebpackPlugin({ title: 'Beam bending' }),
           new webpack.ProvidePlugin({
-            THREE : '../../three.js/'
-            // THREE : 'three'
+            // THREE : '../../three.js/'
+            THREE : 'three'
           })
         ],
         output: {

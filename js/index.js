@@ -58,7 +58,7 @@ const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.inner
 
 scene.add( group );
 
-const renderer = new THREE.WebGLRenderer();
+export const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 // document.body.appendChild( renderer.domElement );
 const container = document.createElement('container');
@@ -263,10 +263,14 @@ function add_color_changer() {
 
         const type = 'colors';
         box.userData.type = type; // this sets up interaction group for controllers
+        SFD.userData.type = type; // this sets up interaction group for controllers
+        BMD.userData.type = type; // this sets up interaction group for controllers
     // if ( VR ) {
         controls.interaction.selectStartHandlers[type] = CONTROLLERS.handleColorSelectStart;
         controls.interaction.selectEndHandlers[type] = CONTROLLERS.handleColorSelectEnd;
         controls.interaction.selectableObjects.push( box );
+        controls.interaction.selectableObjects.push( SFD );
+        controls.interaction.selectableObjects.push( BMD );
     } );
 
 }
@@ -395,7 +399,7 @@ export function redraw_beam() {
 // console.log(controls)
 function animate() {
     // console.debug(controls.interaction)
-    // if ( VR ) {
+    if ( renderer.xr.isPresenting ) {
         renderer.setAnimationLoop( function () {
             controls.update();
             // params = CONTROLLERS.handleCollisions( params, group );
@@ -404,11 +408,11 @@ function animate() {
             // console.log(params.load_position, params.applied_load);
             renderer.render( scene, camera );
         } );
-    // } else {
-    //     controls.update();
-    //     requestAnimationFrame( animate );
-    // 	renderer.render( scene, camera );
-    // }
+    } else {
+        controls.update();
+        requestAnimationFrame( animate );
+    	renderer.render( scene, camera );
+    }
 
 };
 
