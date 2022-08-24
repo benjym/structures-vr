@@ -4,7 +4,7 @@ let P, EI;
 let P_max;
 export let M_max = 0;
 export let SF_max = 0;
-let max_displacement = 0.5;
+export let max_displacement = 0.5;
 
 export function set_initial_position(p) {
     positions = p.map((x)=> x); // deep copy

@@ -1,6 +1,6 @@
 // import * as THREE from 'three';
 import * as PHYSICS from './physics.js';
-import { params, redraw_supports } from './index.js';
+import { params, redraw_supports, controls } from './index.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
 
@@ -258,34 +258,54 @@ export function handleCollisions(params, group) {
 }
 
 export const handleBeamSelectStart = (object, controller) => {
-    console.log(controller)
-    // object.material.emissive.setScalar(0.1);
-    // controller.userData.selected = object;
     // console.log(controller)
-    // controller.getWorldPosition(grip_location); // set displacement to global position
-    // grip_location = controller.
-    params.displacement.subVectors(grip.userData.select_start_position,grip_location); // set displacement to the start position - current
-    params.load_position = params.displacement.x + params.length/2.;
+    controller.selected = object;
+    const intersection_point = controls.raycaster.intersectObject( object )[0].point;
+    controller.select_start_position = intersection_point;
+}
 
-    console.log('grip location: ' + grip_location.x + ' ' + grip_location.y + ' ' + grip_location.z);
-    console.log('displacement:  ' + params.displacement);
-    // params.displacement = -grip.position.y;
-    // console.log(grip.position.y);
-
-    // child.material.emissive.b = 1;
-    let max_length = 0.1; // max distance to have haptics increase at
-    const intensity = params.displacement.length()/max_length;
-    // child.scale.setScalar( 1 + Math.random() * 0.1 * intensity );
-
-    const supportHaptic = 'hapticActuators' in gamepad && gamepad.hapticActuators != null && gamepad.hapticActuators.length > 0;
-    if ( supportHaptic ) {
-        gamepad.hapticActuators[ 0 ].pulse( intensity, 100 );
+export const handleBeamIntersection = ( object ) => {
+    // console.log(controls.vrControls.controllers.right.selected)
+    let intersection_point;
+    let controller;
+    if ( controls.vrControls.controllers.left.selected === object ) {
+        intersection_point = controls.raycaster.intersectObject( object )[0].point;
+        controller = controls.vrControls.controllers.left;
+    } else if ( controls.vrControls.controllers.right.selected === object ) {
+        intersection_point = controls.raycaster.intersectObject( object )[0].point;
+        controller = controls.vrControls.controllers.right;
     }
+    if ( intersection_point !== undefined ) {
+        params.displacement.subVectors(controller.select_start_position,intersection_point); // 
+        params.load_position = -params.displacement.x + params.length/2.;
+        params.displacement.y = Math.sign(params.displacement.y)*Math.min(Math.abs(params.displacement.y),PHYSICS.max_displacement);
+        console.log(params.displacement)
+    }
+        
+
+        // set displacement to the start position - current
+    //     
+
+    //     console.log('grip location: ' + intersection_point.x + ' ' + intersection_point.y + ' ' + intersection_point.z);
+    //     console.log('displacement:  ' + params.displacement);
+    //     // params.displacement = -grip.position.y;
+    //     // console.log(grip.position.y);
+
+    //     // child.material.emissive.b = 1;
+    //     let max_length = 0.1; // max distance to have haptics increase at
+    //     const intensity = params.displacement.length()/max_length;
+    //     // child.scale.setScalar( 1 + Math.random() * 0.1 * intensity );
+
+    //     const supportHaptic = 'hapticActuators' in gamepad && gamepad.hapticActuators != null && gamepad.hapticActuators.length > 0;
+    //     if ( supportHaptic ) {
+    //         gamepad.hapticActuators[ 0 ].pulse( intensity, 100 );
+    //     }
+    // }
 }
 
 export const handleBeamSelectEnd = (object, controller) => {
-    // console.log(object)
-    params.displacement = 0;
+    controller.selected = undefined;
+    params.displacement = new THREE.Vector3();
 }
 
 export const handleLeftSupportSelectStart = (object, controller) => {

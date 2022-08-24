@@ -5,7 +5,7 @@ console.debug(`Using Three.js revision ${THREE.REVISION}`);
 import ImmersiveControls from '@depasquale/three-immersive-controls';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { Lut } from 'three/examples/jsm/math/Lut.js';
-import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
+// import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
 import * as PHYSICS from './physics.js';
 import * as CONTROLLERS from './controllers.js';
@@ -74,9 +74,9 @@ html, body {
     touch-action: none;
     overflow: hidden;
 }`;
-document.head.appendChild(style);
+// document.head.appendChild(style);
 if ( VR ) {
-    document.body.appendChild( VRButton.createButton( renderer ) );
+    // document.body.appendChild( VRButton.createButton( renderer ) );
     renderer.xr.enabled = true;
     // let use_hands;
     // if ( urlParams.has('use_hands') ) { use_hands = true; }
@@ -108,7 +108,7 @@ const tt = (o,c) => {
     console.log(o)
 }
 
-const controls = new ImmersiveControls( camera, renderer, scene );
+export const controls = new ImmersiveControls( camera, renderer, scene );
 // controls.interaction.intersectionHandlers['beam'] = tt;
 
 // console.log(controls)
@@ -191,15 +191,18 @@ function make_square_beam() {
     beam = new THREE.Mesh( geometry, beam_material );
     beam.scale.set( params.length,params.height,params.depth );
     beam.position.add( beam_offset ); // move the beam away from the start location
+    
     const type = 'beam';
     beam.userData.type = type; // this sets up interaction group for controllers
     if ( VR ) {
         controls.interaction.selectStartHandlers[type] = CONTROLLERS.handleBeamSelectStart;
         controls.interaction.selectEndHandlers[type] = CONTROLLERS.handleBeamSelectEnd;
+        controls.interaction.intersectionHandlers[type] = CONTROLLERS.handleBeamIntersection;
         controls.interaction.selectableObjects.push( beam );
     }
 
     group.add ( beam );
+    group.position.y = 2*pin_radius+params.height/2.;
     // scene.add( beam );
     PHYSICS.set_initial_position(beam.geometry.attributes.position.array);
 
@@ -211,17 +214,17 @@ function make_square_beam() {
 }
 
 export function redraw_supports() {
-    gridHelper.position.y = -2*pin_radius-params.height/2.;
+    // gridHelper.position.y = -2*pin_radius-params.height/2.;
     let pin_geometry = new THREE.CylinderGeometry(pin_radius,pin_radius,params.depth+2*pin_radius,20,32);
     let fixed_geometry = new THREE.BoxGeometry(pin_radius,params.height+2*pin_radius,params.depth+2*pin_radius);
     let left_geometry, right_geometry;
     let support_material = new THREE.MeshStandardMaterial( { color: 0xcccccc, vertexColors: false } );
 
     if ( left_support !== undefined ) {
-        scene.remove(left_support)
+        group.remove(left_support)
     }
     if ( right_support !== undefined ) {
-        scene.remove(right_support)
+        group.remove(right_support)
     }
     if ( params.left === 'Pin' ) {
         left_geometry = pin_geometry;
@@ -230,7 +233,7 @@ export function redraw_supports() {
         left_support.position.set(-params.length/2.,-params.height/2-pin_radius,0);
         left_support.position.add(beam_offset);
         left_support.rotation.x = Math.PI/2.;
-        scene.add( left_support );
+        group.add( left_support );
     }
     else if ( params.left === 'Fixed' ) {
         left_geometry = fixed_geometry;
@@ -238,7 +241,7 @@ export function redraw_supports() {
         
         left_support.position.set(-params.length/2.-pin_radius/2.,0,0);
         left_support.position.add(beam_offset);
-        scene.add( left_support );
+        group.add( left_support );
     }
 
     left_support.name = 'Left support'
@@ -256,7 +259,7 @@ export function redraw_supports() {
         right_support.position.add(beam_offset);
         right_support.rotation.x = Math.PI/2.;
 
-        scene.add( right_support );
+        group.add( right_support );
     }
     else if ( params.right === 'Fixed' ) {
         right_geometry = fixed_geometry;
@@ -264,7 +267,7 @@ export function redraw_supports() {
 
         right_support.position.set(params.length/2.+pin_radius/2.,0,0);
         right_support.position.add(beam_offset);
-        scene.add( right_support );
+        group.add( right_support );
     }
 
     right_support.name = 'Right support'
@@ -329,12 +332,12 @@ function redraw_beam() {
 
 
 }
-console.log(controls)
+// console.log(controls)
 function animate() {
-    controls.update();
     // console.debug(controls.interaction)
     if ( VR ) {
         renderer.setAnimationLoop( function () {
+            controls.update();
             // params = CONTROLLERS.handleCollisions( params, group );
             // if ( params.applied_load !== 0 ) { console.log('redrawing...'); redraw_beam() }
             redraw_beam();
@@ -342,6 +345,7 @@ function animate() {
             renderer.render( scene, camera );
         } );
     } else {
+        controls.update();
         requestAnimationFrame( animate );
     	renderer.render( scene, camera );
     }
