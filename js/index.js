@@ -2,6 +2,8 @@ import css from "../css/main.css";
 console.debug(`Using Three.js revision ${THREE.REVISION}`);
 // import * as THREE from 'three';
 // import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import ImmersiveControls from '@depasquale/three-immersive-controls';
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { Lut } from 'three/examples/jsm/math/Lut.js';
@@ -11,18 +13,19 @@ import * as PHYSICS from './physics.js';
 import * as CONTROLLERS from './controllers.js';
 
 // import * as VRGUI from './datguivr/datguivr.min.js';
-import * as VRGUI from './guivr.js';
-import e from "cors";
+// import * as VRGUI from './guivr.js';
 
 let group = new THREE.Group();
 let beam;
 let left_support, right_support;
 let load_position_gui;
+let font;
+export let BMD, SFD, box;
 
 let urlParams = new URLSearchParams(window.location.search);
 
 export let params = {
-    length : 5, // beam length (m)
+    length : 15, // beam length (m)
     depth : 0.2,
     height : 1.5,
     left : 'Pin',
@@ -36,10 +39,10 @@ export let params = {
     displacement: new THREE.Vector3(),
 }
 
-let VR = false;
-if ( urlParams.has('VR') || urlParams.has('vr') ) {
-    VR = true;
-}
+// let VR = false;
+// if ( urlParams.has('VR') || urlParams.has('vr') ) {
+    // VR = true;
+// }
 
 // let beam_offset = new THREE.Vector3(0,1,-0.4);
 let beam_offset = new THREE.Vector3(0,0,0);
@@ -47,8 +50,6 @@ let beam_offset = new THREE.Vector3(0,0,0);
 let lut;
 let rainbow = new Lut("rainbow", 512); // options are rainbow, cooltowarm and blackbody
 let cooltowarm = new Lut("cooltowarm", 512); // options are rainbow, cooltowarm and blackbody
-// lut.setMin(0);
-// lut.setMax(100);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color( 0x333333 );
@@ -74,16 +75,16 @@ html, body {
     touch-action: none;
     overflow: hidden;
 }`;
-// document.head.appendChild(style);
-if ( VR ) {
+document.head.appendChild(style);
+// if ( VR ) {
     // document.body.appendChild( VRButton.createButton( renderer ) );
     renderer.xr.enabled = true;
     // let use_hands;
     // if ( urlParams.has('use_hands') ) { use_hands = true; }
     // else { use_hands = false; }
     // CONTROLLERS.add_controllers(renderer, scene, use_hands);
-    params.displacement_control = true;
-}
+    // params.displacement_control = true;
+// }
 
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -112,7 +113,7 @@ export const controls = new ImmersiveControls( camera, renderer, scene );
 // controls.interaction.intersectionHandlers['beam'] = tt;
 
 // console.log(controls)
-if ( VR ) {
+// if ( VR ) {
     pin_radius = 1;
     // VRGUI.create('Parameters').then((gui) => {
     //     scene.add( gui );
@@ -128,10 +129,10 @@ if ( VR ) {
 
     // set up interactions with the beam
     // controls.interaction.intersectionHandlers[type] = CONTROLLERS.handleIntersection;
-}
-else {
+// }
+// else {
     
-    pin_radius = Math.min(params.height,params.depth)/2.;
+    // pin_radius = Math.min(params.height,params.depth)/2.;
 
     gui = new GUI();
 
@@ -161,7 +162,7 @@ else {
         .name( 'Right Support' ).onChange( redraw_supports ).listen();
         gui.add( params, 'colour_by', ['None','Shear Force','Bending Moment'] )
         .name( 'Colour by' ).onChange( redraw_beam );
-}
+// }
 
 export function make_new_beam() {
     make_square_beam();
@@ -194,12 +195,12 @@ function make_square_beam() {
     
     const type = 'beam';
     beam.userData.type = type; // this sets up interaction group for controllers
-    if ( VR ) {
+    // if ( VR ) {
         controls.interaction.selectStartHandlers[type] = CONTROLLERS.handleBeamSelectStart;
         controls.interaction.selectEndHandlers[type] = CONTROLLERS.handleBeamSelectEnd;
         controls.interaction.intersectionHandlers[type] = CONTROLLERS.handleBeamIntersection;
         controls.interaction.selectableObjects.push( beam );
-    }
+    // }
 
     group.add ( beam );
     group.position.y = 2*pin_radius+params.height/2.;
@@ -212,6 +213,65 @@ function make_square_beam() {
     redraw_supports();
     redraw_beam();
 }
+
+function add_color_changer() {
+    let loader = new FontLoader();
+
+    loader.load( 'fonts/helvetiker_regular.typeface.json', function ( f ) {
+        font = f;
+
+        let geometry = new THREE.BoxGeometry(2,1,0.1);
+        let material = new THREE.MeshStandardMaterial( { color: 0xcccccc } );
+        box = new THREE.Mesh( geometry, material );
+
+        let text_geometry_BMD = new TextGeometry( 'BMD', {
+            font: font,
+            size: 0.5,
+            height: 0.2,
+            curveSegments: 120,
+            bevelEnabled: false,
+            // bevelThickness: 0.001,
+            // bevelSize: 8,
+            // bevelOffset: 0,
+            // bevelSegments: 5
+        } );
+        let text_material = new THREE.MeshStandardMaterial( { color: 0x222222 } );
+        BMD = new THREE.Mesh( text_geometry_BMD, text_material );
+        BMD.position.set(-0.7,-0.2,0);
+
+        let text_geometry_SFD = new TextGeometry( 'SFD', {
+            font: font,
+            size: 0.5,
+            height: 0.2,
+            curveSegments: 120,
+            bevelEnabled: false,
+            // bevelThickness: 0.001,
+            // bevelSize: 8,
+            // bevelOffset: 0,
+            // bevelSegments: 5
+        } );
+        SFD = new THREE.Mesh( text_geometry_SFD, text_material );
+        SFD.position.set(-0.7,-0.2,0);
+
+
+        box.add( BMD );
+
+        box.position.set(-5,0.5,5)
+        box.rotateY(Math.PI/4.);
+
+        scene.add(box)
+
+        const type = 'colors';
+        box.userData.type = type; // this sets up interaction group for controllers
+    // if ( VR ) {
+        controls.interaction.selectStartHandlers[type] = CONTROLLERS.handleColorSelectStart;
+        controls.interaction.selectEndHandlers[type] = CONTROLLERS.handleColorSelectEnd;
+        controls.interaction.selectableObjects.push( box );
+    } );
+
+}
+
+add_color_changer();
 
 export function redraw_supports() {
     // gridHelper.position.y = -2*pin_radius-params.height/2.;
@@ -279,7 +339,7 @@ export function redraw_supports() {
     
 }
 
-function redraw_beam() {
+export function redraw_beam() {
     PHYSICS.updateDeformation(params);
     beam.geometry.setAttribute( 'position', new THREE.BufferAttribute( PHYSICS.positions, 3 ) );
     beam.geometry.attributes.position.needsUpdate = true;
@@ -335,7 +395,7 @@ function redraw_beam() {
 // console.log(controls)
 function animate() {
     // console.debug(controls.interaction)
-    if ( VR ) {
+    // if ( VR ) {
         renderer.setAnimationLoop( function () {
             controls.update();
             // params = CONTROLLERS.handleCollisions( params, group );
@@ -344,11 +404,11 @@ function animate() {
             // console.log(params.load_position, params.applied_load);
             renderer.render( scene, camera );
         } );
-    } else {
-        controls.update();
-        requestAnimationFrame( animate );
-    	renderer.render( scene, camera );
-    }
+    // } else {
+    //     controls.update();
+    //     requestAnimationFrame( animate );
+    // 	renderer.render( scene, camera );
+    // }
 
 };
 

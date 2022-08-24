@@ -1,6 +1,6 @@
 // import * as THREE from 'three';
 import * as PHYSICS from './physics.js';
-import { params, redraw_supports, controls } from './index.js';
+import { params, redraw_supports, redraw_beam, controls, box, SFD, BMD } from './index.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
 import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
 
@@ -10,7 +10,7 @@ let controllers = [];
 let squeeze = [0,0];
 let grip_location = new THREE.Vector3();
 
-const box = new THREE.Box3();
+// const box = new THREE.Box3();
 
 export function add_controllers(renderer, scene, use_hands) {
 
@@ -323,4 +323,19 @@ export const handleRightSupportSelectStart = (object, controller) => {
 export const handleSupportSelectEnd = (object, controller) => {
     // console.log(object)
     // params.displacement = 0;
+}
+
+export const handleColorSelectStart = (object, controller) => {
+    if ( params.colour_by == 'Bending Moment' ) {
+        params.colour_by = 'Shear Force';
+        box.remove(BMD);
+        box.add(SFD);
+    }
+    else if ( params.colour_by == 'Shear Force' ) {
+        params.colour_by = 'Bending Moment';
+        box.remove(SFD);
+        box.add(BMD); }
+    redraw_beam();
+}
+export const handleColorSelectEnd = (object, controller) => {
 }
