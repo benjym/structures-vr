@@ -12,6 +12,7 @@ import * as CONTROLLERS from './controllers.js';
 
 // import * as VRGUI from './datguivr/datguivr.min.js';
 import * as VRGUI from './guivr.js';
+import e from "cors";
 
 let group = new THREE.Group();
 let beam;
@@ -301,31 +302,29 @@ function redraw_beam() {
             lut = cooltowarm;
             max_val = PHYSICS.SF_max;
         }
-        if ( VR ) {
-            
-        }
-        else {
-            // let min_val = Math.min(...arr);
-            // max_val = Math.max(...arr);
-        }
-        
+        const colors = [];
+
         // console.log(max_val)
         if ( max_val > 0 ) {
-        lut.setMin(-max_val);
-        lut.setMax( max_val);
-        // console.log(max_val)
-        const colors = [];
-        for ( let i = 0; i < arr.length; i ++ ) {
-            const colorValue = arr[ i ];
-            const color = lut.getColor( colorValue );
-            colors.push(color.r, color.g, color.b);
+            lut.setMin(-max_val);
+            lut.setMax( max_val);
+            // console.log(max_val)
+            for ( let i = 0; i < arr.length; i ++ ) {
+                const colorValue = arr[ i ];
+                const color = lut.getColor( colorValue );
+                colors.push(color.r, color.g, color.b);
+            }
+            // colors.needsUpdate = true;
+            // console.log(colors)
+        } else {
+            for ( let i = 0; i < arr.length; i ++ ) {
+                colors.push(0,0,0);
+            }
         }
-        // colors.needsUpdate = true;
-        // console.log(colors)
-        beam.geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
-        beam.geometry.attributes.color.needsUpdate = true;
-        beam.material.needsUpdate = true;
-        }
+    beam.geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
+    beam.geometry.attributes.color.needsUpdate = true;
+    beam.material.needsUpdate = true;
+
     }
 
 
