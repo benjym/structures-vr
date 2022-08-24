@@ -25,18 +25,18 @@ export let BMD, SFD, box;
 let urlParams = new URLSearchParams(window.location.search);
 
 export let params = {
-    length : 15, // beam length (m)
+    length : 20, // beam length (m)
     depth : 0.2,
     height : 1.5,
     left : 'Pin',
     right : 'Pin',
     applied_load : 0,
-    load_position: 2.5,
+    load_position: 10,
     youngs_modulus : 215,
     colour_by : 'Bending Moment',
     np : 100, // number of points along beam
     displacement_control : true,
-    displacement: new THREE.Vector3(),
+    displacement: new THREE.Vector3(0,0.25,0),
 }
 
 // let VR = false;
@@ -208,7 +208,7 @@ function make_square_beam() {
     PHYSICS.set_initial_position(beam.geometry.attributes.position.array);
 
     camera.position.y = params.length/8;
-    camera.position.z = params.length/1.5;
+    camera.position.z = params.length/2.5;
 
     redraw_supports();
     redraw_beam();
@@ -217,7 +217,9 @@ function make_square_beam() {
 function add_color_changer() {
     let loader = new FontLoader();
 
-    loader.load( 'fonts/helvetiker_regular.typeface.json', function ( f ) {
+    // loader.load( 'fonts/helvetiker_regular.typeface.json', function ( f ) {
+    loader.load( 'https://unpkg.com/three@0.143.0/examples/fonts/helvetiker_regular.typeface.json', function ( f ) {
+        
         font = f;
 
         let geometry = new THREE.BoxGeometry(2,1,0.1);
