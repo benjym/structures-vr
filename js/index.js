@@ -401,7 +401,8 @@ export function redraw_beam() {
 // console.log(controls)
 function animate() {
     // console.debug(controls.interaction)
-    if ( renderer.xr.isPresenting ) {
+    // console.debug(renderer.xr)
+    // if ( renderer.xr.isPresenting ) {
         renderer.setAnimationLoop( function () {
             controls.update();
             // params = CONTROLLERS.handleCollisions( params, group );
@@ -410,11 +411,11 @@ function animate() {
             // console.log(params.load_position, params.applied_load);
             renderer.render( scene, camera );
         } );
-    } else {
-        controls.update();
-        requestAnimationFrame( animate );
-    	renderer.render( scene, camera );
-    }
+    // } else {
+        // controls.update();
+        // requestAnimationFrame( animate );
+    	// renderer.render( scene, camera );
+    // }
 
 };
 
