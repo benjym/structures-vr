@@ -1,0 +1,7 @@
+{
+    "name": "Structures-VR",
+    "display": "standalone",
+    "short_name": "structures-vr",
+    "start_url": "https://benjym.github.io/structures-vr/",
+    "scope": "https://benjym.github.io/structures-vr/"
+}
