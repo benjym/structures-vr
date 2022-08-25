@@ -25,6 +25,7 @@ jobs:
       - uses: actions/setup-node@v2
       - run: npm install
       - run: npm run build
+      - run: cp manifest.webmanifest dist/manifest.webmanifest
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.2.5
