@@ -1,7 +1,16 @@
 {
-    "name": "Structures-VR",
+    "name": "BMLY",
     "display": "standalone",
-    "short_name": "structures-vr",
+    "short_name": "BMLY",
     "start_url": "https://benjym.github.io/structures-vr/",
-    "scope": "https://benjym.github.io/structures-vr/"
+    "scope": "https://benjym.github.io/structures-vr/",
+    "icons": [{
+        "src": "resources/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }, {
+        "src": "resources/icon-190.png",
+        "sizes": "190x190",
+        "type": "image/png"
+      }],
 }

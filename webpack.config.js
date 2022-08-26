@@ -8,7 +8,10 @@ module.exports = [
         // mode: "production",
         entry: './js/index.js',
         plugins: [
-          new HtmlWebpackPlugin({ title: 'Beam bending' }),
+          new HtmlWebpackPlugin({
+            title: 'BMLY',
+            favicon: "./resources/icon-512.png"
+           }),
           new webpack.ProvidePlugin({
             // THREE : '../../three.js/'
             THREE : 'three'
