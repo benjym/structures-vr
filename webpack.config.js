@@ -10,7 +10,8 @@ module.exports = [
         plugins: [
           new HtmlWebpackPlugin({
             title: 'BMLY',
-            favicon: "./resources/icon-512.png"
+            favicon: "./resources/favicon512.png",
+            template: "index.html",
            }),
           new webpack.ProvidePlugin({
             // THREE : '../../three.js/'
@@ -33,6 +34,11 @@ module.exports = [
                 test: /\.css$/i,
                 use: ["style-loader", "css-loader"],
               },
+              {
+                test: /\.(ico|webmanifest)$/,
+                exclude: /node_modules/,
+                use: ["file-loader?name=[name].[ext]"] // ?name=[name].[ext] is only necessary to preserve the original file name
+              }
             ],
           },
     },

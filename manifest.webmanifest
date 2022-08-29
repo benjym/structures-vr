@@ -2,15 +2,16 @@
     "name": "BMLY",
     "display": "standalone",
     "short_name": "BMLY",
+    "background_color": "#fff",
+    "theme_color": "#2d0",
     "start_url": "https://benjym.github.io/structures-vr/",
     "scope": "https://benjym.github.io/structures-vr/",
     "icons": [{
-        "src": "resources/icon-512.png",
+        "src": "favicon512.png",
         "sizes": "512x512",
-        "type": "image/png"
-      }, {
-        "src": "resources/icon-190.png",
-        "sizes": "190x190",
-        "type": "image/png"
-      }],
+        "type": "image/png",
+        "purpose": "any"
+      }
+    ],
+    "ovr_package_name": "bmly.scigem.com"
 }
