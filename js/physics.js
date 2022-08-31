@@ -33,8 +33,8 @@ export function updateDeformation(params) {
             M_max = Math.max(Math.abs(M1), Math.abs(M2));
             SF_max = Math.max(Math.abs(R1), Math.abs(R2));
         }  else if ( (params.left === 'Pin') && (params.right === 'Fixed') ) {
-            P = (12 * EI * l*l*l * params.displacement.y * (3*l + a))/( a*a * b*b*b ) || 0;
-            P_max = (12 * EI * l*l*l * max_displacement * (3*l + a))/( a*a * b*b*b ) || 0;
+            P = (12 * EI * l*l*l * params.displacement.y / (3*l + a))/( a*a * b*b*b ) || 0;
+            P_max = (12 * EI * l*l*l * max_displacement / (3*l + a))/( a*a * b*b*b ) || 0;
             let R1 = P_max*b*b*(a+2*l)/(2*l*l*l);
             let R2 = P_max*a*(3*l*l - a*a)/(2*l*l*l);
             let M1 = R1*a; // moment at point of load
@@ -42,8 +42,8 @@ export function updateDeformation(params) {
             M_max = Math.max(Math.abs(M1),Math.abs(M2));
             SF_max = Math.max(Math.abs(R1),Math.abs(R2));
         }  else if ( (params.left === 'Fixed') && (params.right === 'Pin') ) {
-            P = (12 * EI * l*l*l * params.displacement.y * (3*l + b))/( a*a*a * b*b ) || 0;
-            P_max = (12 * EI * l*l*l * max_displacement * (3*l + b))/( a*a*a * b*b ) || 0;
+            P = (12 * EI * l*l*l * params.displacement.y / (3*l + b))/( a*a*a * b*b ) || 0;
+            P_max = (12 * EI * l*l*l * max_displacement / (3*l + b))/( a*a*a * b*b ) || 0;
             let R1 = P_max*a*a*(b+2*l)/(2*l*l*l);
             let R2 = P_max*b*(3*l*l - b*b)/(2*l*l*l);
             let M1 = R1*b; // moment at point of load
