@@ -119,9 +119,9 @@ scene.add(light2);
 let pin_radius;
 let gui;
 
-const tt = (o, c) => {
-    console.log(o)
-}
+// const tt = (o, c) => {
+//     console.log(o)
+// }
 
 export const controls = new ImmersiveControls(camera, renderer, scene, {
     initialPosition: new THREE.Vector3(0, 1.6, 8)
