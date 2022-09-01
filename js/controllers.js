@@ -194,7 +194,7 @@ export function handleCollisions(params, group) {
 
                     // child.material.emissive.b = 1;
                     let max_length = 0.1; // max distance to have haptics increase at
-                    const intensity = params.displacement.length() / max_length;
+                    const intensity = PHYSICS.P / PHYSICS.P_max;
                     // child.scale.setScalar( 1 + Math.random() * 0.1 * intensity );
 
                     if (supportHaptic) {

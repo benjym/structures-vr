@@ -1,7 +1,7 @@
 export let positions, shear_force, bending_moment;
 let initial_positions;
-let P, EI;
-let P_max;
+let EI;
+export let P, P_max;
 export let M_max = 0;
 export let SF_max = 0;
 export let max_displacement = 0.5;
