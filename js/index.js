@@ -13,6 +13,7 @@ import * as PHYSICS from './physics.js';
 import * as CONTROLLERS from './controllers.js';
 
 import manifest from '../manifest.webmanifest';
+import beach from '../resources/beach-1.jpeg';
 
 // import * as VRGUI from './datguivr/datguivr.min.js';
 // import * as VRGUI from './guivr.js';
@@ -59,7 +60,7 @@ const background_geometry = new THREE.SphereGeometry(500, 60, 40);
 // // invert the geometry on the x-axis so that all of the faces point inward
 background_geometry.scale(- 1, 1, 1);
 
-const background_texture = new THREE.TextureLoader().load('resources/beach-1.jpeg');
+const background_texture = new THREE.TextureLoader().load(beach);
 const background_material = new THREE.MeshBasicMaterial({ map: background_texture });
 
 const background = new THREE.Mesh(background_geometry, background_material);
