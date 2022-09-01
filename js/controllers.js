@@ -18,7 +18,7 @@ export function add_controllers(renderer, scene, use_hands) {
     // if ( use_hands ) {
 
     // controllers
-    console.log(renderer.xr)
+    // console.log(renderer.xr)
     const controller1 = renderer.xr.getController(0);
     // const primaryInputSource = xrSession.inputSources.find((src) => src.handedness === user.handedness) ?? xrSession.inputSources[0]; // HOW TO MAKE A PARTICULAR HAND CONTROLLER 1 WITH FALLBACK TO JUST THE FIRST CONNECTED
     // console.log(controller1)
@@ -187,8 +187,8 @@ export function handleCollisions(params, group) {
                     params.displacement.subVectors(grip.userData.select_start_position, grip_location); // set displacement to the start position - current
                     params.load_position = params.displacement.x + params.length / 2.;
 
-                    console.log('grip location: ' + grip_location.x + ' ' + grip_location.y + ' ' + grip_location.z);
-                    console.log('displacement:  ' + params.displacement);
+                    // console.log('grip location: ' + grip_location.x + ' ' + grip_location.y + ' ' + grip_location.z);
+                    // console.log('displacement:  ' + params.displacement);
                     // params.displacement = -grip.position.y;
                     // console.log(grip.position.y);
 
@@ -284,7 +284,7 @@ export const handleBeamIntersection = (object) => {
             params.displacement.subVectors(controller.select_start_position, intersection_point); // 
             params.load_position = -params.displacement.x + params.length / 2.;
             params.displacement.y = Math.sign(params.displacement.y) * Math.min(Math.abs(params.displacement.y), PHYSICS.max_displacement);
-            console.log(params.displacement)
+            // console.log(params.displacement)
         }
     }
 
