@@ -326,6 +326,19 @@ export function redraw_supports() {
         left_support.position.add(beam_offset);
         group.add(left_support);
     }
+    else if (params.left === 'Free') {
+        left_geometry = pin_geometry;
+        let material = support_material.clone();
+        material.transparent = true;
+        material.opacity = 0.3;
+        left_support = new THREE.Mesh(left_geometry, material);
+
+
+        left_support.position.set(-params.length / 2., -params.height / 2 - pin_radius, 0);
+        left_support.position.add(beam_offset);
+        left_support.rotation.x = Math.PI / 2.;
+        group.add(left_support);
+    }
 
     left_support.name = 'Left support'
     left_support.userData.type = 'left_support'; // this sets up interaction group for controllers
@@ -352,6 +365,20 @@ export function redraw_supports() {
         right_support.position.add(beam_offset);
         group.add(right_support);
     }
+    else if (params.right === 'Free') {
+        right_geometry = pin_geometry;
+        let material = support_material.clone();
+        material.transparent = true;
+        material.opacity = 0.3;
+        right_support = new THREE.Mesh(right_geometry, material);
+
+        right_support.position.set(params.length / 2., -params.height / 2 - pin_radius, 0);
+        right_support.position.add(beam_offset);
+        right_support.rotation.x = Math.PI / 2.;
+
+        group.add(right_support);
+    }
+
 
     right_support.name = 'Right support'
     right_support.userData.type = 'right_support'; // this sets up interaction group for controllers
