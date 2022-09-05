@@ -166,7 +166,7 @@ eval("\n\n/* istanbul ignore next  */\nfunction styleTagTransform(css, styleElem
   \********************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = __webpack_require__.p + \"f3c649f072f8f131d750.jpeg\";\n\n//# sourceURL=webpack://structures-vr/./resources/beach-1.jpeg?");
+eval("module.exports = __webpack_require__.p + \"bdceac1de9e9df34fa3a.jpeg\";\n\n//# sourceURL=webpack://structures-vr/./resources/beach-1.jpeg?");
 
 /***/ }),
 
