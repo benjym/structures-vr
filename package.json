@@ -5,7 +5,7 @@
     "watch": "webpack --watch",
     "start": "webpack serve --open",
     "build": "webpack",
-    "build_apk": "./oculus-packaging/ovr-platform-util create-pwa -o BMLY.apk --android-sdk /Users/bmar5496/Library/Android/sdk --package-name com.scigem.pwa --manifest-content-file manifest.webmanifest --apk-template ./oculus-packaging/pwa-template.apk --apk-tool ./oculus-packaging/apktool --keystore ./oculus-packaging/debug.keystore",
+    "build_apk": "./oculus-packaging/ovr-platform-util create-pwa -o BMLY.apk --android-sdk /Users/bmar5496/Library/Android/sdk --package-name com.scigem.bmly --manifest-content-file manifest.webmanifest --apk-template ./oculus-packaging/pwa-template.apk --apk-tool ./oculus-packaging/apktool --keystore ./oculus-packaging/debug.keystore",
     "deploy": "adb install BMLY.apk"
   },
   "dependencies": {
