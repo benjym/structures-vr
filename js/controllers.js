@@ -28,9 +28,9 @@ export const handleBeamIntersection = (object) => {
         }
         if (intersection_point !== undefined) {
             params.displacement.subVectors(controller.select_start_position, intersection_point); // 
-            params.load_position = -params.displacement.x + params.length / 2.;
+            params.load_position = intersection_point.x + params.length / 2.;
             params.displacement.y = Math.sign(params.displacement.y) * Math.min(Math.abs(params.displacement.y), PHYSICS.max_displacement);
-            // console.log(params.displacement)
+            console.log(params.load_position);//,params.displacement.x,controller.select_start_position.x,intersection_point.x)
 
             const supportHaptic = 'hapticActuators' in controller.gamepad && controller.gamepad.hapticActuators != null && controller.gamepad.hapticActuators.length > 0;
             if ( supportHaptic ) {
@@ -45,6 +45,7 @@ export const handleBeamIntersection = (object) => {
 
 export const handleBeamSelectEnd = (object, controller) => {
     if (renderer.xr.isPresenting) {
+        controller.select_start_position = undefined;
         controller.selected = undefined;
         params.displacement = new THREE.Vector3();
     }
