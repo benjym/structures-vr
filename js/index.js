@@ -67,8 +67,8 @@ scene.background = new THREE.Color(0x333333);
 
 // scene.add(background);
 
-// const gridHelper = new THREE.GridHelper(100, 100);
-// scene.add(gridHelper);
+const gridHelper = new THREE.GridHelper(100, 100);
+scene.add(gridHelper);
 
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
