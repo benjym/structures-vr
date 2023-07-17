@@ -56,16 +56,16 @@ let cooltowarm = new Lut("cooltowarm", 512); // options are rainbow, cooltowarm 
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x333333);
-const background_geometry = new THREE.SphereGeometry(500, 60, 40);
-// // invert the geometry on the x-axis so that all of the faces point inward
-background_geometry.scale(- 1, 1, 1);
+// const background_geometry = new THREE.SphereGeometry(500, 60, 40);
+// // // invert the geometry on the x-axis so that all of the faces point inward
+// background_geometry.scale(- 1, 1, 1);
 
-const background_texture = new THREE.TextureLoader().load(beach);
-const background_material = new THREE.MeshBasicMaterial({ map: background_texture });
+// const background_texture = new THREE.TextureLoader().load(beach);
+// const background_material = new THREE.MeshBasicMaterial({ map: background_texture });
 
-const background = new THREE.Mesh(background_geometry, background_material);
+// const background = new THREE.Mesh(background_geometry, background_material);
 
-scene.add(background);
+// scene.add(background);
 
 // const gridHelper = new THREE.GridHelper(100, 100);
 // scene.add(gridHelper);
