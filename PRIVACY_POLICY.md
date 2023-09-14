@@ -1,6 +1,6 @@
 **Privacy Policy**
 
-The University of Sydny built the BMLY app as an Open Source app. This SERVICE is provided by The University of Sydny at no cost and is intended for use as is.
+The University of Sydney built the BMLY app as an Open Source app. This SERVICE is provided by The University of Sydney at no cost and is intended for use as is.
 
 This page is used to inform visitors regarding our policies with the collection, use, and disclosure of Personal Information if anyone decided to use our Service.
 
