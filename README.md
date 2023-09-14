@@ -9,7 +9,7 @@ This app currently displays a simple beam. The user can change the supports (eac
  3.  Run `npm start` to compile the buildfiles and view the page in the browser
 
 ## Usage
-You can test out the code [here]( https://benjym.github.io/structures-vr/).
+The code runs entirely in the browser. It can be used [from the desktop here](https://benjym.github.io/structures-vr/?desktop), or on your VR headset by [going to this url](https://benjym.github.io/structures-vr/).
 
 ## Authors
  - [Benjy Marks](mailto:benjy.marks@sydney.edu.au)
